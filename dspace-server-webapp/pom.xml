@@ -428,6 +428,11 @@
                     <groupId>org.eclipse.jetty</groupId>
                     <artifactId>jetty-xml</artifactId>
                 </exclusion>
+                <!-- More recent version in neo4j -->
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -487,6 +492,28 @@
                     <groupId>org.eclipse.jetty</groupId>
                     <artifactId>jetty-xml</artifactId>
                 </exclusion>
+                <!-- More recent version in neo4j [START]-->
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcpkix-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.ben-manes.caffeine</groupId>
+                    <artifactId>caffeine</artifactId>
+                </exclusion>
+                <!-- More recent version in neo4j [END]-->
             </exclusions>
         </dependency>
         <!-- Reminder: Keep icu4j (in Parent POM) synced with version used by lucene-analyzers-icu below,
