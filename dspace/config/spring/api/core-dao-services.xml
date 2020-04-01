@@ -63,6 +63,7 @@
     <bean class="org.dspace.xmlworkflow.storedcomponents.dao.impl.WorkflowItemRoleDAOImpl"/>
     <bean class="org.dspace.xmlworkflow.storedcomponents.dao.impl.XmlWorkflowItemDAOImpl"/>
 
-
+	<!-- neo4j -->
+	<bean class="org.dspace.neo4j.dao.Neo4jDAOImpl"/>
 
 </beans>

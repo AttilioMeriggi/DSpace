@@ -1,28 +1,34 @@
-package org.dspace.neo4j;
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
+package org.dspace.neo4j.dao;
 
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.dspace.neo4j.AuthenticationDriver;
+import org.dspace.neo4j.DSpaceNode;
+import org.dspace.neo4j.DSpaceRelation;
 import org.dspace.services.ConfigurationService;
 import org.dspace.utils.DSpace;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Values;
 
-public class DaoDspace {
+public class Neo4jDAOImpl implements Neo4jDAO {
 
-    private AuthenticationDriver auth_driver;
-    private final Logger log = Logger.getLogger(DaoDspace.class);
+    private AuthenticationDriver authDriver;
+    private final Logger log = Logger.getLogger(Neo4jDAOImpl.class);
 
-    public DaoDspace() {
-        ConfigurationService configurationService = new DSpace().getConfigurationService();
-        this.auth_driver = new AuthenticationDriver(configurationService.getProperty("neo4j.server"),
-            configurationService.getProperty("neo4j.username"),
-                        configurationService.getProperty("neo4j.password"));
+    public Neo4jDAOImpl() {
     }
 
-    public void create_update_node (DSpaceNode dsnode) {
-    //Session session = null;
+    public void createUpdateNode(DSpaceNode dsnode) {
+        AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             String entity_type = dsnode.getEntityType();
 
@@ -33,7 +39,7 @@ public class DaoDspace {
                 query.append(entity_type);
                 query.append("{IDDB:$x");
                 String final_query = query.toString();
-                session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x",dsnode.getIDDB())));
+                session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", dsnode.getIDDB())));
             }
 
             /* Create node with relationships */
@@ -50,8 +56,8 @@ public class DaoDspace {
                 query.append("]-(node2)");
 
                 String final_query = query.toString();
-                session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x",dsnode.getIDDB(),
-                    "w",rels.getTarget().getIDDB())));
+                session.writeTransaction(tx -> tx.run(final_query,
+                        Values.parameters("x", dsnode.getIDDB(), "w", rels.getTarget().getIDDB())));
             }
 
             /* Insert metadata in start node */
@@ -145,13 +151,14 @@ public class DaoDspace {
                 }
             }
         } catch (Exception e) {
-            //e.printStackTrace();
             log.error(e.getMessage(), e);
 
-        } finally { }
+        } finally {
+        }
     }
 
-    public void delete_node_with_relationships (DSpaceNode dsnode) {
+    public void deleteNodeWithRelationships(DSpaceNode dsnode) {
+        AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             StringBuilder query = new StringBuilder();
             query.append("MATCH nodo:");
@@ -162,8 +169,22 @@ public class DaoDspace {
             String final_query = query.toString();
             session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", dsnode.getIDDB())));
         } catch (Exception e) {
-            //e.printStackTrace();
             log.error(e.getMessage(), e);
-        } finally { }
+        } finally {
+        }
+    }
+
+    public void setAuthDriver(AuthenticationDriver authDriver) {
+        this.authDriver = authDriver;
+    }
+
+    public AuthenticationDriver getAuthDriver() {
+        if (this.authDriver == null) {
+            ConfigurationService configurationService = new DSpace().getConfigurationService();
+            this.authDriver = new AuthenticationDriver(configurationService.getProperty("neo4j.server"),
+                    configurationService.getProperty("neo4j.username"),
+                    configurationService.getProperty("neo4j.password"));
+        }
+        return this.authDriver;
     }
 }
