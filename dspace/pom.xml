@@ -285,6 +285,13 @@
             <groupId>org.dspace.modules</groupId>
             <artifactId>additions</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <!-- More recent version in neo4j [START]-->
+                <exclusion>
+                    <groupId>org.apache.xmlbeans</groupId>
+                    <artifactId>xmlbeans</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     	<!-- This dependency ensures DSpace OAI JAR is added to [dspace]/lib/,
              so that the 'dspace oai' launcher.xml command works.  -->

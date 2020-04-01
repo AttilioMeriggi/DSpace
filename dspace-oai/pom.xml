@@ -152,6 +152,11 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-configuration-processor</artifactId>
                 </exclusion>
+                <!-- More recent version in neo4j -->
+                <exclusion>
+                    <groupId>org.parboiled</groupId>
+                    <artifactId>parboiled-java</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -261,7 +266,7 @@
         <dependency>
             <groupId>org.parboiled</groupId>
             <artifactId>parboiled-core</artifactId>
-            <version>1.1.7</version>
+            <version>1.2.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

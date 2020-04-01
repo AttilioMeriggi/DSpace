@@ -489,6 +489,30 @@
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-cell</artifactId>
             <version>${solr.client.version}</version>
+            <exclusions>
+                <!-- More recent version in neo4j [START]-->
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcpkix-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.ben-manes.caffeine</groupId>
+                    <artifactId>caffeine</artifactId>
+                </exclusion>
+                <!-- More recent version in neo4j [END]-->
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -658,6 +682,13 @@
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>4.5</version>
+            <exclusions>
+                <!-- More recent version in neo4j -->
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Email templating -->
@@ -686,18 +717,19 @@
             <artifactId>bcel</artifactId>
             <version>6.4.0</version>
         </dependency>
-        
+
         <dependency>
-        	<groupId>org.neo4j</groupId>
-        	<artifactId>neo4j</artifactId>
-        	<version>4.0.1</version>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j</artifactId>
+            <version>4.0.3</version>
         </dependency>
-        
-		<dependency>
-		    <groupId>org.neo4j.driver</groupId>
-		    <artifactId>neo4j-java-driver</artifactId>
-		    <version>4.0.0</version>
-		</dependency>
+
+        <dependency>
+	        <groupId>org.neo4j.driver</groupId>
+	        <artifactId>neo4j-java-driver</artifactId>
+	        <version>4.0.0</version>
+        </dependency>
+
     </dependencies>
 
 </project>

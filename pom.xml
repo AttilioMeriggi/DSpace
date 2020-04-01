@@ -40,7 +40,8 @@
         <hibernate-validator.version>6.0.17.Final</hibernate-validator.version>
         <!-- PIN Solr to 7.3.x until SOLR-12858 is fixed. This bug affects all integration tests that use Solr
              https://issues.apache.org/jira/browse/SOLR-12858 -->
-        <solr.client.version>7.3.1</solr.client.version>
+        <!--solr.client.version>7.3.1</solr.client.version-->
+        <solr.client.version>8.2.0</solr.client.version>
         <spring.version>5.1.9.RELEASE</spring.version>
         <spring-boot.version>2.1.8.RELEASE</spring-boot.version>
         <!-- Library for reading JSON documents: https://github.com/json-path/JsonPath -->
@@ -1426,6 +1427,13 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
                 <version>${poi-version}</version>
+                <!-- More recent version in neo4j -->
+                 <exclusions>
+		            <exclusion>
+		                <groupId>org.apache.xmlbeans</groupId>
+		                <artifactId>xmlbeans</artifactId>
+	                </exclusion>
+	            </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
