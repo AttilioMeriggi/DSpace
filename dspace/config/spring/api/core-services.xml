@@ -125,5 +125,7 @@
     <bean class="org.dspace.discovery.indexobject.WorkflowItemIndexFactoryImpl" autowire-candidate="true"/>
     <bean class="org.dspace.discovery.indexobject.WorkspaceItemIndexFactoryImpl" autowire-candidate="true"/>
 
+	<!-- neo4j -->
+	<bean class="org.dspace.neo4j.Neo4jServiceImpl"/>
 </beans>
 
