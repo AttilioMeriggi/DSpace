@@ -13,6 +13,7 @@ import org.dspace.AbstractNeo4jTest;
 import org.dspace.neo4j.factory.Neo4jFactory;
 import org.dspace.neo4j.service.Neo4jService;
 import org.junit.Before;
+import org.junit.Test;
 
 public class Neo4jServiceTest extends AbstractNeo4jTest {
     private static final Logger log = LogManager.getLogger(Neo4jServiceTest.class);
@@ -24,13 +25,17 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
     public void init() {
         try {
             super.init();
-            
+
             authDriver = new AuthenticationDriver(neo4j.boltURI().toString(), null, null);
             neo4jService.setAuthDriver(authDriver);
         } catch (Exception ex) {
             log.error("Error during test initialization", ex);
         }
     }
-    
+
     // TODO: test neo4jService
+    @Test
+    public void insertNodeTest() {
+        
+    }
 }

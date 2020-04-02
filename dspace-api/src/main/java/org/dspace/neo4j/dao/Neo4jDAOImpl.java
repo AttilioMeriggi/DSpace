@@ -181,9 +181,9 @@ public class Neo4jDAOImpl implements Neo4jDAO {
     public AuthenticationDriver getAuthDriver() {
         if (this.authDriver == null) {
             ConfigurationService configurationService = new DSpace().getConfigurationService();
-            this.authDriver = new AuthenticationDriver(configurationService.getProperty("neo4j.server"),
-                    configurationService.getProperty("neo4j.username"),
-                    configurationService.getProperty("neo4j.password"));
+            this.authDriver = new AuthenticationDriver(configurationService.getProperty("neo4j.config.server"),
+                    configurationService.getProperty("neo4j.config.username"),
+                    configurationService.getProperty("neo4j.config.password"));
         }
         return this.authDriver;
     }

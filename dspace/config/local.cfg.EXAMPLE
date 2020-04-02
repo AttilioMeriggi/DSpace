@@ -224,12 +224,9 @@ submission.lookup.webofknowledge.password =
 # NEO4J CONFIGURATION #
 ##########################
 
-# NEO4J Driver
-neo4j.driver = neo4j
-
 # NEO4J Server
-neo4j.server = neo4j://localhost:7687
+neo4j.server=
 
 # Database username and password
-neo4j.username = neo4j
-neo4j.password = neo4j
+neo4j.username=
+neo4j.password=
