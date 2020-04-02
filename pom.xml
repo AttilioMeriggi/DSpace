@@ -1233,10 +1233,11 @@
                 <artifactId>handle</artifactId>
                 <version>9.1.0.v20190416</version>
             </dependency>
+            <!-- More recent version in neo4j -->
             <dependency>
                 <groupId>org.eclipse.jetty.aggregate</groupId>
                 <artifactId>jetty-all</artifactId>
-                <version>8.1.22.v20160922</version>
+                <version>9.4.19.v20190610</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>javax.servlet</artifactId>
@@ -1429,11 +1430,11 @@
                 <version>${poi-version}</version>
                 <!-- More recent version in neo4j -->
                  <exclusions>
-		            <exclusion>
-		                <groupId>org.apache.xmlbeans</groupId>
-		                <artifactId>xmlbeans</artifactId>
-	                </exclusion>
-	            </exclusions>
+                    <exclusion>
+                        <groupId>org.apache.xmlbeans</groupId>
+                        <artifactId>xmlbeans</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
