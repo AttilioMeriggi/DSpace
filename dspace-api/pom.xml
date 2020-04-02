@@ -316,6 +316,32 @@
                     <artifactId>javax.servlet</artifactId>
                     <groupId>org.eclipse.jetty.orbit</groupId>
                 </exclusion>
+                <!-- neo4j has a more recent version [START] -->
+                <exclusion>
+                    <artifactId>org.ow2.asm</artifactId>
+                    <groupId>asm</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org.ow2.asm</artifactId>
+                    <groupId>asm-util</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org.ow2.asm</artifactId>
+                    <groupId>asm-analysis</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org.ow2.asm</artifactId>
+                    <groupId>asm-tree</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org.ow2.asm</artifactId>
+                    <groupId>asm-common</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.asm</groupId>
+                    <artifactId>asm-commons</artifactId>
+                </exclusion>
+                <!-- neo4j has a more recent version [END]-->
             </exclusions>
         </dependency>
         <dependency>
@@ -510,6 +536,10 @@
                 <exclusion>
                     <groupId>com.github.ben-manes.caffeine</groupId>
                     <artifactId>caffeine</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.asm</groupId>
+                    <artifactId>asm-commons</artifactId>
                 </exclusion>
                 <!-- More recent version in neo4j [END]-->
             </exclusions>
@@ -718,12 +748,14 @@
             <version>6.4.0</version>
         </dependency>
 
+        <!-- neo4j 4.0.3 is recompiled with jetty.version 9.4.19.v20190610 -->
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j</artifactId>
             <version>4.0.3</version>
         </dependency>
 
+        <!-- neo4j 4.0.3 is recompiled with jetty.version 9.4.19.v20190610 -->
         <dependency>
             <groupId>org.neo4j.test</groupId>
             <artifactId>neo4j-harness</artifactId>
@@ -743,9 +775,16 @@
         </dependency>
 
         <dependency>
-	        <groupId>org.neo4j.driver</groupId>
-	        <artifactId>neo4j-java-driver</artifactId>
-	        <version>4.0.0</version>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+
+        <!-- version used in neo4j [START]-->
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-commons</artifactId>
+            <version>7.2</version>
         </dependency>
 
     </dependencies>
