@@ -1,7 +1,7 @@
 package org.dspace;
 
-import org.flywaydb.core.Flyway;
-import org.junit.Before;
+//import org.flywaydb.core.Flyway;
+//import org.junit.Before;
 import org.junit.BeforeClass;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
@@ -9,7 +9,7 @@ import org.neo4j.harness.Neo4jBuilders;
 public class AbstractNeo4jTest extends AbstractUnitTest {
 
     protected static Neo4j neo4j;
-    
+
     /**
      * This method will be run before the first test as per @BeforeClass. It will
      * initialize shared resources required for all tests of this class.
