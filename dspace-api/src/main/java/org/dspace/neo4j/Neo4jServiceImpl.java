@@ -30,6 +30,11 @@ public class Neo4jServiceImpl implements Neo4jService {
     }
 
     @Override
+    public void deleteGraph() {
+        neo4jDAO.deleteGraph();
+    }
+
+    @Override
     public List<Map<String, Object>> read_nodes_type(DSpaceNode dsnode) {
         return neo4jDAO.read_nodes_type(dsnode);
     }

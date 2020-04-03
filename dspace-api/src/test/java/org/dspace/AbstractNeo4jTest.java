@@ -1,7 +1,7 @@
 package org.dspace;
 
-//import org.flywaydb.core.Flyway;
-//import org.junit.Before;
+import org.flywaydb.core.Flyway;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;

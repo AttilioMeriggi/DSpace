@@ -185,6 +185,22 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         }
     }
 
+    @Override
+    public void deleteGraph() {
+        AuthenticationDriver auth_driver = getAuthDriver();
+        try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
+            StringBuilder query = new StringBuilder();
+            query.append("MATCH (nodo) ");
+            query.append("DETACH DELETE nodo");
+            String final_query = query.toString();
+            session.writeTransaction(tx -> tx.run(final_query));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+        }
+    }
+
+
     /**
      * Read nodes of a type with all properties
      * 
@@ -257,7 +273,6 @@ public class Neo4jDAOImpl implements Neo4jDAO {
 
         return properties_map;
     }
-
 
     /**
      * Read nodes by depth with all properties (including start node)

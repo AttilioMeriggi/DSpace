@@ -15,14 +15,22 @@ import org.dspace.neo4j.DSpaceNode;
 
 public interface Neo4jDAO {
 
+    /* Method for creating or updating nodes with their relationships */
     public void createUpdateNode(DSpaceNode dsnode);
 
+    /* Method for deleating nodes with their relationships */
     public void deleteNodeWithRelationships(DSpaceNode dsnode);
 
+    /* Method for delete all graph */
+    public void deleteGraph();
+
+    /* Method for reading the nodes of a specific label */
     public List<Map<String, Object>> read_nodes_type(DSpaceNode dsnode);
 
+    /* Method for reading node of a specific IDDB */
     public Map<String, Object> read_node_by_id(DSpaceNode dsnode);
 
+    /* Method for reading all nodes at a certain depth from that specified */
     public List<Map<String, Object>> read_nodes_by_depth(DSpaceNode dsnode, int depth);
 
     public void setAuthDriver(AuthenticationDriver authDriver);
