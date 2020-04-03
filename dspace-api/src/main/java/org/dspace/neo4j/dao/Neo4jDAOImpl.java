@@ -42,7 +42,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                 StringBuilder query = new StringBuilder();
                 query.append("MERGE (node1:");
                 query.append(entity_type);
-                query.append("{IDDB:$x");
+                query.append("{IDDB:$x})");
                 String final_query = query.toString();
                 session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", dsnode.getIDDB())));
             }
