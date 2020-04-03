@@ -53,8 +53,6 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
     @Before
     public void setUp() throws Exception {
 
-        this.init();
-
         generic_researcher = new DSpaceNode("Researcher", "1");
         generic_publication = new DSpaceNode("Publication", "101");
 
@@ -109,7 +107,6 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
     /**
      * Test 1: insert node without relationships (single node)
      */
-    // TODO: failed
     @Test
     public void insertSingleNodeTest() {
         DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, null);
