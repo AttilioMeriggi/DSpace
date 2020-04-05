@@ -30,6 +30,9 @@ public interface Neo4jService {
     /* Service Neo4j for reading node of a specific IDDB */
     public Map<String, Object> read_node_by_id(DSpaceNode dsnode);
 
+    /* Service to read relationship properties between two nodes */
+    public Map<String, Object> read_properties_rel(DSpaceNode dsnode1, DSpaceNode dsnode2);
+
     /* Service Neo4j for reading all nodes at a certain depth from that specified */
     public List<Map<String, Object>> read_nodes_by_depth(DSpaceNode dsnode, int depth);
 

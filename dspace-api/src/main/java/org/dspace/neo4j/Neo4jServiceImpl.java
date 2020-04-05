@@ -45,6 +45,11 @@ public class Neo4jServiceImpl implements Neo4jService {
     }
 
     @Override
+    public Map<String, Object> read_properties_rel(DSpaceNode dsnode1, DSpaceNode dsnode2) {
+        return neo4jDAO.read_properties_rel(dsnode1, dsnode2);
+    }
+
+    @Override
     public List<Map<String, Object>> read_nodes_by_depth(DSpaceNode dsnode, int depth) {
         return neo4jDAO.read_nodes_by_depth(dsnode, depth);
     }

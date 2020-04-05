@@ -141,7 +141,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                         StringBuilder query = new StringBuilder();
                         query.append("MATCH (node1:");
                         query.append(entity_type);
-                        query.append("IDDB:\"");
+                        query.append("{IDDB:\"");
                         query.append(dsnode.getIDDB());
                         query.append("\"})");
                         query.append("-[rels:");
@@ -200,7 +200,6 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         }
     }
 
-
     /**
      * Read nodes of a type with all properties
      * 
@@ -217,8 +216,8 @@ public class Neo4jDAOImpl implements Neo4jDAO {
             StringBuilder query = new StringBuilder();
             query.append("MATCH (node1:");
             query.append(entity_type);
-            query.append(")");
-            query.append(" RETURN properties(node1)");
+            query.append(") ");
+            query.append("RETURN properties(node1)");
 
             String final_query = query.toString();
             Result result = session.run(final_query);
@@ -271,6 +270,33 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         } finally {
         }
 
+        return properties_map;
+    }
+
+    /**
+     * Read properties relationship between two nodes
+     * 
+     */
+    public Map<String, Object> read_properties_rel(DSpaceNode dsnode1, DSpaceNode dsnode2) {
+        AuthenticationDriver auth_driver = getAuthDriver();
+        Map<String, Object> properties_map = new HashMap<String, Object>();
+        try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
+            StringBuilder query = new StringBuilder();
+            query.append("MATCH (node1:");
+            query.append(dsnode1.getEntityType());
+            query.append("{IDDB:$x})-[rel]-(node2:");
+            query.append(dsnode2.getEntityType());
+            query.append("{IDDB:$y}) ");
+            query.append("RETURN properties(rel)");
+            String final_query = query.toString();
+            Result result = session.run(final_query, Values.parameters("x", dsnode1.getIDDB(), "y", dsnode2.getIDDB()));
+            for (Record record : result.list()) {
+                properties_map = record.asMap();
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+        }
         return properties_map;
     }
 
