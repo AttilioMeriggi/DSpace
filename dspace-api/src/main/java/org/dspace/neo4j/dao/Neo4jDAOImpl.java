@@ -172,9 +172,9 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             StringBuilder query = new StringBuilder();
-            query.append("MATCH nodo:");
+            query.append("MATCH (nodo:");
             query.append(dsnode.getEntityType());
-            query.append("{IDDB:$x})");
+            query.append("{IDDB:$x}) ");
             query.append("DETACH DELETE nodo");
 
             String final_query = query.toString();
@@ -252,7 +252,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
 
             StringBuilder query = new StringBuilder();
-            query.append("MATCH node: ");
+            query.append("MATCH (node:");
             query.append(entity_type);
             query.append("{IDDB:$x}) ");
             query.append("RETURN properties(node)");
@@ -290,7 +290,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
             StringBuilder query = new StringBuilder();
             query.append("MATCH (start:");
             query.append(entity_type);
-            query.append("{IDDB:$x})-[*0..");
+            query.append("{IDDB:$x})-[*1..");
             query.append(depth);
             query.append("]-(ends) ");
             query.append("WITH DISTINCT ends ");
@@ -303,7 +303,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                 list_properties_map.add(properties_map);
             }
 
-            if (list_properties_map.size() == 1) {
+            if (list_properties_map.size() == 0) {
                 return Collections.emptyList();
             }
         } catch (Exception e) {
