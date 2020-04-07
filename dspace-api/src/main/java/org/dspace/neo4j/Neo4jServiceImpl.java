@@ -7,11 +7,16 @@
  */
 package org.dspace.neo4j;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dspace.content.Item;
+import org.dspace.content.MetadataValue;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
 import org.dspace.neo4j.dao.Neo4jDAO;
@@ -19,6 +24,8 @@ import org.dspace.neo4j.service.Neo4jService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class Neo4jServiceImpl implements Neo4jService {
+
+    private static final Logger log = LogManager.getLogger(Neo4jServiceImpl.class);
 
     @Autowired(required = true)
     private Neo4jDAO neo4jDAO;
@@ -28,10 +35,34 @@ public class Neo4jServiceImpl implements Neo4jService {
 
     @Override
     public DSpaceNode convertItem(Context context, UUID id) {
-        //if Publication
-        //verify metadata coauthors and create Relation
-        //Item item = insertService.find(context, id);
-        return neo4jDAO.convertItem();
+        DSpaceNode converted = null;
+        try {
+            Item item = insertService.find(context, id);
+            String entityType = null; // extract type from object item;
+            String IDDB = id.toString();
+            Map<String, List<String>> metadataNode = new HashMap<String, List<String>>();
+            List<DSpaceRelation> relations = new ArrayList<DSpaceRelation>();
+
+            List<MetadataValue> metadataItem = item.getMetadata();
+
+            // Which metadataItem should analyze and report in the DSpaceNode object???
+
+            // if type is Researcher
+            converted = new DSpaceNode(entityType, IDDB, metadataNode, null);
+
+            // if type is Publication verify metadata coauthors and create Relation
+            /* metadata relationship.type is a type of DSpaceRelation created */
+            /* target is the item related to it through authority */
+            /* metadata DSpaceRelation ??? */
+            // DSpaceRelation rel1 = new DSpaceRelation(type, target, metadata);
+            // DSpaceRelation rel2 = new DSpaceRelation(type, target, metadata);
+            converted = new DSpaceNode(entityType, IDDB, metadataNode, relations);
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+        }
+        return converted;
     }
 
     @Override

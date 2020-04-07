@@ -15,9 +15,6 @@ import org.dspace.neo4j.DSpaceNode;
 
 public interface Neo4jDAO {
 
-    /* */
-    public DSpaceNode convertItem();
-
     /* Method for creating or updating nodes with their relationships */
     public void createUpdateNode(DSpaceNode dsnode);
 

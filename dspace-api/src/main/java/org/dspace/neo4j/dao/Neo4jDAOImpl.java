@@ -33,12 +33,6 @@ public class Neo4jDAOImpl implements Neo4jDAO {
     }
 
     @Override
-    public DSpaceNode convertItem() {
-        //TODO
-        return null;
-    }
-
-    @Override
     public void createUpdateNode(DSpaceNode dsnode) {
         AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {

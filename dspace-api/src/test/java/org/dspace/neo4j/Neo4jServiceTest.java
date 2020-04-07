@@ -739,7 +739,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
                         + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Smith]}}",
                 result2_id_res1.toString());
 
-        //TODO:Failed
+        //TODO:Failed if set metadata to null, don't delete them
         researcher_1.setMetadata(null);
         neo4jService.createUpdateNode(researcher_1);
         Map<String, Object> result3_id_res1 = neo4jService.read_node_by_id(generic_researcher);
