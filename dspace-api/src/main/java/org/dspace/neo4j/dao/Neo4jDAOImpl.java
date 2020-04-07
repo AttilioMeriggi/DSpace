@@ -32,6 +32,13 @@ public class Neo4jDAOImpl implements Neo4jDAO {
     public Neo4jDAOImpl() {
     }
 
+    @Override
+    public DSpaceNode convertItem() {
+        //TODO
+        return null;
+    }
+
+    @Override
     public void createUpdateNode(DSpaceNode dsnode) {
         AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
@@ -168,6 +175,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         }
     }
 
+    @Override
     public void deleteNodeWithRelationships(DSpaceNode dsnode) {
         AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
@@ -206,6 +214,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @param dsnode
      * @return list maps properties nodes or EmptyList
      */
+    @Override
     public List<Map<String, Object>> read_nodes_type(DSpaceNode dsnode) {
         AuthenticationDriver auth_driver = getAuthDriver();
         String entity_type = dsnode.getEntityType();
@@ -244,6 +253,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @param dsnode
      * @return node map with all properties or EmptyMap
      */
+    @Override
     public Map<String, Object> read_node_by_id(DSpaceNode dsnode) {
         AuthenticationDriver auth_driver = getAuthDriver();
         String entity_type = dsnode.getEntityType();
@@ -277,6 +287,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * Read properties relationship between two nodes
      * 
      */
+    @Override
     public Map<String, Object> read_properties_rel(DSpaceNode dsnode1, DSpaceNode dsnode2) {
         AuthenticationDriver auth_driver = getAuthDriver();
         Map<String, Object> properties_map = new HashMap<String, Object>();
@@ -307,6 +318,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @param depth
      * @return list maps properties node or EmptyList
      */
+    @Override
     public List<Map<String, Object>> read_nodes_by_depth(DSpaceNode dsnode, int depth) {
         AuthenticationDriver auth_driver = getAuthDriver();
         String entity_type = dsnode.getEntityType();
@@ -352,4 +364,5 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         }
         return this.authDriver;
     }
+
 }

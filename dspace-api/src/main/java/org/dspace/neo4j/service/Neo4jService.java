@@ -9,11 +9,15 @@ package org.dspace.neo4j.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import org.dspace.core.Context;
 import org.dspace.neo4j.AuthenticationDriver;
 import org.dspace.neo4j.DSpaceNode;
 
 public interface Neo4jService {
+
+    public DSpaceNode convertItem(Context context, UUID id);
 
     /* Service Neo4j for creating or updating nodes with their relationships */
     public void createUpdateNode(DSpaceNode dsnode);

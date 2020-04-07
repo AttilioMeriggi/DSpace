@@ -9,7 +9,11 @@ package org.dspace.neo4j;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import org.dspace.content.Item;
+import org.dspace.content.service.ItemService;
+import org.dspace.core.Context;
 import org.dspace.neo4j.dao.Neo4jDAO;
 import org.dspace.neo4j.service.Neo4jService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +22,17 @@ public class Neo4jServiceImpl implements Neo4jService {
 
     @Autowired(required = true)
     private Neo4jDAO neo4jDAO;
+
+    @Autowired(required = true)
+    private ItemService insertService;
+
+    @Override
+    public DSpaceNode convertItem(Context context, UUID id) {
+        //if Publication
+        //verify metadata coauthors and create Relation
+        //Item item = insertService.find(context, id);
+        return neo4jDAO.convertItem();
+    }
 
     @Override
     public void createUpdateNode(DSpaceNode dsnode) {

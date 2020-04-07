@@ -15,6 +15,9 @@ import org.dspace.neo4j.DSpaceNode;
 
 public interface Neo4jDAO {
 
+    /* */
+    public DSpaceNode convertItem();
+
     /* Method for creating or updating nodes with their relationships */
     public void createUpdateNode(DSpaceNode dsnode);
 
@@ -37,4 +40,5 @@ public interface Neo4jDAO {
     public List<Map<String, Object>> read_nodes_by_depth(DSpaceNode dsnode, int depth);
 
     public void setAuthDriver(AuthenticationDriver authDriver);
+
 }

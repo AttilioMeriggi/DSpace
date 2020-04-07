@@ -7,13 +7,13 @@ import org.dspace.core.Context;
 import org.dspace.event.Consumer;
 import org.dspace.event.Event;
 
-public class IndexEventConsumer implements Consumer {
+public class Neo4jConsumer implements Consumer {
 
     /**
     * Log4j Logger
     * 
     */
-    private static Logger log = org.apache.logging.log4j.LogManager.getLogger(IndexEventConsumer.class);
+    private static Logger log = org.apache.logging.log4j.LogManager.getLogger(Neo4jConsumer.class);
 
     @Override
     public void initialize() throws Exception {
