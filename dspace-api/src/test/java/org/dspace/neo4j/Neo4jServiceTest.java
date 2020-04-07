@@ -667,8 +667,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
 
         /* Read depth = 4 (Start node = publication_3) */
         List<Map<String, Object>> result1_depth4_pub3 = neo4jService.read_nodes_by_depth(publication_3, 4);
-        // TODO:Failed test because also reads himself
-        // assertEquals(5, result1_depth4_pub3.size());
+        assertEquals(5, result1_depth4_pub3.size());
 
         /* Delete a node publication_1 and read again nodes by depth */
         neo4jService.deleteNodeWithRelationships(publication_1);
@@ -687,8 +686,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
 
         /* Read depth = 4 (Start node researcher_1 */
         List<Map<String, Object>> result2_depth4_res1 = neo4jService.read_nodes_by_depth(researcher_1, 4);
-        // TODO:Failed Read also himself
-        // assertEquals(4, result2_depth4_res1.size());
+        assertEquals(3, result2_depth4_res1.size());
 
         /* Read depth = 1 (Start node researcher_2) */
         List<Map<String, Object>> result2_depth1_res2 = neo4jService.read_nodes_by_depth(researcher_2, 1);

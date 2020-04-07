@@ -338,6 +338,18 @@ public class Neo4jDAOImpl implements Neo4jDAO {
             if (list_properties_map.size() == 0) {
                 return Collections.emptyList();
             }
+
+            StringBuilder start = new StringBuilder();
+            start.append("IDDB=");
+            start.append(dsnode.getIDDB());
+            start.append(",");
+            for (Map<String, Object> maps : list_properties_map) {
+                for (String s : maps.keySet()) {
+                    if (maps.get(s).toString().contains(start)) {
+                        list_properties_map.remove(maps);
+                    }
+                }
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
