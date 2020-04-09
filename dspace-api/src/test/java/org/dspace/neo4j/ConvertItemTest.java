@@ -1,7 +1,6 @@
 package org.dspace.neo4j;
 
 import static org.junit.Assert.assertEquals;
-//import static org.junit.Assert.assertSame;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -70,20 +69,34 @@ public class ConvertItemTest extends AbstractNeo4jTest {
                     null, null, "My Collection");
             collectionService.update(context, collection);
 
-            // create an Item
-            WorkspaceItem wi = workspaceItemService.create(context, collection, false);
-            Item item = wi.getItem();
-            itemService.setMetadataSingleValue(context, item, MetadataSchemaEnum.DC.getName(), "title", null, null,
-                    "sample item");
-            itemService.update(context, item);
+            // create an ItemPerson
+            WorkspaceItem wiPerson = workspaceItemService.create(context, collection, false);
+            Item itemPerson = wiPerson.getItem();
+            itemService.setMetadataSingleValue(context, itemPerson, MetadataSchemaEnum.DC.getName(), "title", null,
+                    null, "Attilio Meriggi");
+            itemService.setMetadataSingleValue(context, itemPerson, "crisprp", "email", null, null, "attili@sample.ue");
+            itemService.setMetadataSingleValue(context, itemPerson, "relationship", "type", null, null, "person");
+            itemService.update(context, itemPerson);
+
+            // create an ItemPublication
+            WorkspaceItem wiPublication = workspaceItemService.create(context, collection, false);
+            Item itemPublication = wiPublication.getItem();
+            itemService.setMetadataSingleValue(context, itemPublication, MetadataSchemaEnum.DC.getName(), "title", null,
+                    null, "Sample article");
+            itemService.addMetadata(context, itemPublication, MetadataSchemaEnum.DC.getName(), "contributor", "author",
+                    null, "Attilio Meriggi", itemPerson.getID().toString(), 0);
+            itemService.setMetadataSingleValue(context, itemPublication, "relationship", "type", null, null,
+                    "publication");
+            itemService.update(context, itemPerson);
 
             // Perform test convertItem
-            UUID id = item.getID();
-            DSpaceNode converted_item = neo4jService.convertItem(context, id);
-            List<MetadataValue> metadata = item.getMetadata();
+            neo4jService.insertUpdateItem(context, itemPerson.getID());
+            neo4jService.insertUpdateItem(context, itemPublication.getID());
+
+            //List<MetadataValue> metadata = item.getMetadata();
             // assertEquals(converted_item.getEntityType(), item.getType().toString());
-            assertEquals(converted_item.getIDDB(), id.toString());
-            assertEquals(converted_item.getMetadata().get("dc.name").get(0), metadata.get(0).getValue());
+            //assertEquals(converted_item.getIDDB(), id.toString());
+            //assertEquals(converted_item.getMetadata().get("dc.name").get(0), metadata.get(0).getValue());
 
             context.restoreAuthSystemState();
 

@@ -17,7 +17,9 @@ import org.dspace.neo4j.DSpaceNode;
 
 public interface Neo4jService {
 
-    public DSpaceNode convertItem(Context context, UUID id);
+    public DSpaceNode buildEmptyItem(Context context, UUID id);
+
+    public void insertUpdateItem(Context context, UUID id);
 
     /* Service Neo4j for creating or updating nodes with their relationships */
     public void createUpdateNode(DSpaceNode dsnode);

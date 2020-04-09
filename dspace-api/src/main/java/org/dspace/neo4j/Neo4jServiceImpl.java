@@ -31,38 +31,71 @@ public class Neo4jServiceImpl implements Neo4jService {
     private Neo4jDAO neo4jDAO;
 
     @Autowired(required = true)
-    private ItemService insertService;
+    private ItemService itemService;
 
     @Override
-    public DSpaceNode convertItem(Context context, UUID id) {
-        DSpaceNode converted = null;
+    public DSpaceNode buildEmptyItem(Context context, UUID id) {
+        DSpaceNode dsnode = null;
         try {
-            Item item = insertService.find(context, id);
-            String entityType = null; // extract type from object item;
-            String IDDB = id.toString();
-            Map<String, List<String>> metadataNode = new HashMap<String, List<String>>();
+            Item item = itemService.find(context, id);
+            List<MetadataValue> values = itemService.getMetadata(item, "relationship", "type", null, null);
+
+            String entityType = "";
+            for (MetadataValue value : values) {
+                entityType = value.getValue();
+            }
+            dsnode = new DSpaceNode(entityType, item.getID().toString());
+            neo4jDAO.createUpdateNode(dsnode);
+        } catch (Exception e) {
+            log.error("Error creating empty item", e);
+
+            return null;
+        }
+        return dsnode;
+    }
+
+    @Override
+    public void insertUpdateItem(Context context, UUID id) {
+        try {
+            Item item = itemService.find(context, id);
+
             List<DSpaceRelation> relations = new ArrayList<DSpaceRelation>();
 
             List<MetadataValue> metadataItem = item.getMetadata();
+            for (MetadataValue metadataValue : metadataItem) {
+                if (metadataValue.getAuthority() != null) {
+                    String idAuthority = metadataValue.getAuthority();
+                    DSpaceNode converted = buildEmptyItem(context, UUID.fromString(idAuthority));
+                    Map<String, List<String>> metadataNode = new HashMap<String, List<String>>();
+                    for (MetadataValue m : metadataItem) {
+                        String key = m.getMetadataField().toString();
+                        if (!metadataNode.containsKey(key)) {
+                            metadataNode.put(key, new ArrayList<String>());
+                        }
+                        metadataNode.get(key).add(m.getValue());
+                    }
 
-            // Which metadataItem should analyze and report in the DSpaceNode object???
+                    relations.add(new DSpaceRelation(converted.getEntityType(), converted, metadataNode));
+                }
+            }
+            List<MetadataValue> values = itemService.getMetadata(item, "relationship", "type", null, null);
 
-            // if type is Researcher
-            converted = new DSpaceNode(entityType, IDDB, metadataNode, null);
-
-            // if type is Publication verify metadata coauthors and create Relation
-            /* metadata relationship.type is a type of DSpaceRelation created */
-            /* target is the item related to it through authority */
-            /* metadata DSpaceRelation ??? */
-            // DSpaceRelation rel1 = new DSpaceRelation(type, target, metadata);
-            // DSpaceRelation rel2 = new DSpaceRelation(type, target, metadata);
-            converted = new DSpaceNode(entityType, IDDB, metadataNode, relations);
-
+            String entityType = "";
+            for (MetadataValue value : values) {
+                entityType = value.getValue();
+            }
+            Map<String, List<String>> metadataNode = new HashMap<String, List<String>>();
+            for (MetadataValue m : metadataItem) {
+                String key = m.getMetadataField().toString();
+                if (!metadataNode.containsKey(key)) {
+                    metadataNode.put(key, new ArrayList<String>());
+                }
+                metadataNode.get(key).add(m.getValue());
+            }
+            neo4jDAO.createUpdateNode(new DSpaceNode(entityType, id.toString(), metadataNode, relations));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-        } finally {
         }
-        return converted;
     }
 
     @Override

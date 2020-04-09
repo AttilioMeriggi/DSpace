@@ -10,6 +10,8 @@ package org.dspace.neo4j;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.proxy.HibernateProxyHelper;
+
 public class DSpaceNode {
     String entityType;
     String IDDB;
@@ -59,5 +61,40 @@ public class DSpaceNode {
 
     public void setRelations(List<DSpaceRelation> relations) {
         this.relations = relations;
+    }
+
+    /**
+     * Return <code>true</code> if <code>other</code> is the same DSpaceNode as
+     * this object, <code>false</code> otherwise
+     *
+     * @param obj object to compare to
+     * @return <code>true</code> if object passed in represents the same
+     *         DSpaceNode as this object
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        Class<?> objClass = HibernateProxyHelper.getClassWithoutInitializingProxy(obj);
+        if (getClass() != objClass) {
+            return false;
+        }
+        final DSpaceNode other = (DSpaceNode) obj;
+        if (this.IDDB.equals(other.IDDB)) {
+            return false;
+        }
+        if (!this.getIDDB().equals(other.getIDDB())) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + this.IDDB.hashCode();
+        hash = 47 * hash + this.getIDDB().hashCode();
+        return hash;
     }
 }

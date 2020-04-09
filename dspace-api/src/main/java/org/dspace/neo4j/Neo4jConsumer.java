@@ -44,6 +44,7 @@ public class Neo4jConsumer implements Consumer {
         switch (et) {
             case Event.CREATE:
                 //neo4jService.createUpdateNode(dSpaceNode);
+                neo4jService.insertItem(ctx, event.getObjectID());
             case Event.MODIFY:
                 //neo4jService.createUpdateNode(dSpaceNode);
             case Event.MODIFY_METADATA:

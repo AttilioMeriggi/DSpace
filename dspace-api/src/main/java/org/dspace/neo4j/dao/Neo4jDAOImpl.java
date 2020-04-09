@@ -335,7 +335,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                 list_properties_map.add(properties_map);
             }
 
-            if (list_properties_map.size() == 0) {
+            if (list_properties_map.isEmpty()) {
                 return Collections.emptyList();
             }
 
