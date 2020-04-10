@@ -13,6 +13,8 @@ import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,9 +92,7 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             Item itemPerson = wiPerson.getItem();
             itemService.setMetadataSingleValue(context, itemPerson, MetadataSchemaEnum.DC.getName(), "title", null,
                     null, "Attilio Meriggi");
-            // itemService.setMetadataSingleValue(context, itemPerson, "crisprp", "email",
-            // null, null,
-            // "attilio@sample.ue");
+            itemService.setMetadataSingleValue(context, itemPerson, "crisrp", "email", null, null, "attilio@sample.ue");
             itemService.setMetadataSingleValue(context, itemPerson, "relationship", "type", null, null, "person");
             itemService.update(context, itemPerson);
 
@@ -111,14 +111,21 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             // Insert publication item and consequently also insert the related item person
             // automatically
             neo4jService.insertUpdateItem(context, itemPublication.getID());
+            neo4jService.insertUpdateItem(context, itemPerson.getID());
+
+            DSpaceNode sampleNodePerson = new DSpaceNode("person");
+            DSpaceNode sampleNodePublication = new DSpaceNode("publication");
+            List<Map<String, Object>> numbPerson = neo4jService.readNodesByType(sampleNodePerson);
+            List<Map<String, Object>> numbPublication = neo4jService.readNodesByType(sampleNodePublication);
+            assertEquals(1, numbPerson.size());
+            assertEquals(1, numbPublication.size());
 
             DSpaceNode itemPersonNode = neo4jService.readNodeById(itemPerson.getID().toString());
             assertEquals(itemPerson.getID().toString(), itemPersonNode.getIDDB());
-            assertEquals("[Attilio Meriggi]", itemPersonNode.getMetadata().toString());
+            //assertEquals("[Attilio Meriggi]", itemPersonNode.getMetadata().toString());
             // assertEquals("[attilio@sample.ue]",
-            // itemPersonNode.getMetadata().get("crisprp_email"));
-            // assertEquals("[person]",
-            // itemPersonNode.getMetadata().get("relationship_type"));
+            // itemPersonNode.getMetadata().get("crisrp_email"));
+            assertEquals("[person]", itemPersonNode.getMetadata().get("relationship_type").toString());
 
             DSpaceNode itemPublicationNode = neo4jService.readNodeById(itemPublication.getID().toString());
             assertEquals(itemPublication.getID().toString(), itemPublicationNode.getIDDB());

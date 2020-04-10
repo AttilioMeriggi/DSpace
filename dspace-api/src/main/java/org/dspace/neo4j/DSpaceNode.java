@@ -18,6 +18,10 @@ public class DSpaceNode {
     Map<String, List<String>> metadata;
     List<DSpaceRelation> relations;
 
+    public DSpaceNode(String entityType) {
+        this.entityType = entityType;
+    }
+
     public DSpaceNode(String entityType, String IDDB) {
         this.entityType = entityType;
         this.IDDB = IDDB;
@@ -69,12 +73,12 @@ public class DSpaceNode {
     }
 
     /**
-     * Return <code>true</code> if <code>other</code> is the same DSpaceNode as
-     * this object, <code>false</code> otherwise
+     * Return <code>true</code> if <code>other</code> is the same DSpaceNode as this
+     * object, <code>false</code> otherwise
      *
      * @param obj object to compare to
-     * @return <code>true</code> if object passed in represents the same
-     *         DSpaceNode as this object
+     * @return <code>true</code> if object passed in represents the same DSpaceNode
+     *         as this object
      */
     @Override
     public boolean equals(Object obj) {
@@ -86,7 +90,7 @@ public class DSpaceNode {
             return false;
         }
         final DSpaceNode other = (DSpaceNode) obj;
-        if (this.IDDB.equals(other.IDDB)) {
+        if (!this.IDDB.equals(other.IDDB)) {
             return false;
         }
         if (!this.getIDDB().equals(other.getIDDB())) {

@@ -743,7 +743,6 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(researcher_1);
         DSpaceNode result3_id_res1 = neo4jService.readNodeById(generic_researcher.getIDDB());
         //assertEquals("{}", result3_id_res1.getMetadata().toString());
-
     }
 
 }
