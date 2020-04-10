@@ -49,6 +49,9 @@
 
     <bean id="indexObjectFactoryFactory" class="org.dspace.discovery.indexobject.factory.IndexObjectFactoryFactoryImpl"/>
 
+	<!-- Imp factory -->
+	<bean id="impServiceFactory" class="org.dspace.batch.factory.ImpServiceFactoryImpl"/>
+
 	<!-- neo4j -->
 	<bean id="neo4jFactory" class="org.dspace.neo4j.factory.Neo4jFactoryImpl"/>
 </beans>

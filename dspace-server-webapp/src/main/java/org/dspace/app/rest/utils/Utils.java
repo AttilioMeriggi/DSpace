@@ -21,12 +21,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +39,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -53,25 +56,32 @@ import org.dspace.app.rest.model.ProcessRest;
 import org.dspace.app.rest.model.ResourcePolicyRest;
 import org.dspace.app.rest.model.RestAddressableModel;
 import org.dspace.app.rest.model.RestModel;
+import org.dspace.app.rest.model.VersionHistoryRest;
 import org.dspace.app.rest.model.hateoas.DSpaceResource;
 import org.dspace.app.rest.model.hateoas.EmbeddedPage;
 import org.dspace.app.rest.model.hateoas.HALResource;
+import org.dspace.app.rest.projection.CompositeProjection;
 import org.dspace.app.rest.projection.DefaultProjection;
+import org.dspace.app.rest.projection.EmbedRelsProjection;
 import org.dspace.app.rest.projection.Projection;
 import org.dspace.app.rest.repository.DSpaceRestRepository;
 import org.dspace.app.rest.repository.LinkRestRepository;
+import org.dspace.app.rest.repository.ReloadableEntityObjectRepository;
 import org.dspace.content.BitstreamFormat;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.service.BitstreamFormatService;
 import org.dspace.content.service.DSpaceObjectService;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
+import org.dspace.services.ConfigurationService;
 import org.dspace.services.RequestService;
 import org.dspace.util.UUIDUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -98,13 +108,17 @@ public class Utils {
     /**
      * The maximum number of embed levels to allow.
      */
-    private static final int EMBED_MAX_LEVELS = 2;
+    private static final int EMBED_MAX_LEVELS = 10;
 
     @Autowired
     ApplicationContext applicationContext;
 
     @Autowired
     RequestService requestService;
+
+    @Autowired
+    @Qualifier("defaultConversionService")
+    ConversionService conversionService;
 
     @Autowired(required = true)
     private List<DSpaceObjectService<? extends DSpaceObject>> dSpaceObjectServices;
@@ -114,6 +128,9 @@ public class Utils {
 
     @Autowired
     private ConverterService converter;
+
+    @Autowired
+    private ConfigurationService configurationService;
 
     /** Cache to support fast lookups of LinkRest method annotation information. */
     private Map<Method, Optional<LinkRest>> linkAnnotationForMethod = new HashMap<>();
@@ -167,12 +184,32 @@ public class Utils {
                                                                                      .withRel(rel);
     }
 
+    /**
+     * Retrieve the {@link DSpaceRestRepository} for the specified category and model in the plural form as used in the endpoints.
+     * If the model is available in its singular form use {@link #getResourceRepositoryByCategoryAndModel(String, String)}
+     * 
+     * @param apiCategory
+     * @param modelPlural
+     * @return
+     */
     public DSpaceRestRepository getResourceRepository(String apiCategory, String modelPlural) {
         String model = makeSingular(modelPlural);
+        return getResourceRepositoryByCategoryAndModel(apiCategory, model);
+    }
+
+    /**
+     * Retrieve the {@link DSpaceRestRepository} for the specified category and model. The model is in the singular form
+     * as returned by the {@link RestAddressableModel#getType()} method
+     * 
+     * @param apiCategory
+     * @param modelSingular
+     * @return
+     */
+    public DSpaceRestRepository getResourceRepositoryByCategoryAndModel(String apiCategory, String modelSingular) {
         try {
-            return applicationContext.getBean(apiCategory + "." + model, DSpaceRestRepository.class);
+            return applicationContext.getBean(apiCategory + "." + modelSingular, DSpaceRestRepository.class);
         } catch (NoSuchBeanDefinitionException e) {
-            throw new RepositoryNotFoundException(apiCategory, model);
+            throw new RepositoryNotFoundException(apiCategory, modelSingular);
         }
     }
 
@@ -194,6 +231,9 @@ public class Utils {
         }
         if (StringUtils.equals(modelPlural, "processes")) {
             return ProcessRest.NAME;
+        }
+        if (StringUtils.equals(modelPlural, "versionhistories")) {
+            return VersionHistoryRest.NAME;
         }
         return modelPlural.replaceAll("s$", "");
     }
@@ -442,28 +482,87 @@ public class Utils {
     }
 
     /**
-     * Gets the projection requested by the current servlet request, or {@link DefaultProjection} if none
+     * Gets the effective projection requested by the current servlet request, or {@link DefaultProjection} if none
      * is specified.
+     * <p>
+     * Any number of individual {@code Projections} that are spring-registered {@link Component}s may be specified
+     * by name via the {@code projection} parameter. If multiple projections are specified, they will be wrapped in a
+     * {@link CompositeProjection} and applied in order as described there.
+     * </p><p>
+     * In addition, any number of embeds may be specified by rel name via the {@code embed} parameter.
+     * When provided, these act as a whitelist of embeds that may be included in the response, as described
+     * and implemented by {@link EmbedRelsProjection}.
+     * </p>
      *
      * @return the requested or default projection, never {@code null}.
      * @throws IllegalArgumentException if the request specifies an unknown projection name.
      */
     public Projection obtainProjection() {
-        String projectionName = requestService.getCurrentRequest().getServletRequest().getParameter("projection");
-        return converter.getProjection(projectionName);
+        ServletRequest servletRequest = requestService.getCurrentRequest().getServletRequest();
+        List<String> projectionNames = getValues(servletRequest, "projection");
+        Set<String> embedRels = new HashSet<>(getValues(servletRequest, "embed"));
+
+        List<Projection> projections = new ArrayList<>();
+
+        for (String projectionName : projectionNames) {
+            projections.add(converter.getProjection(projectionName));
+        }
+
+        if (!embedRels.isEmpty()) {
+            projections.add(new EmbedRelsProjection(embedRels));
+        }
+
+        if (projections.isEmpty()) {
+            return Projection.DEFAULT;
+        } else if (projections.size() == 1) {
+            return projections.get(0);
+        } else {
+            return new CompositeProjection(projections);
+        }
+    }
+
+    /**
+     * Gets zero or more values for the given servlet request parameter.
+     * <p>
+     * This convenience method reads multiple values that have been specified as request parameter in multiple ways:
+     * via * {@code ?paramName=value1&paramName=value2}, via {@code ?paramName=value1,value2},
+     * or a combination.
+     * </p><p>
+     * It provides the values in the order they were given in the request, and automatically de-dupes them.
+     * </p>
+     *
+     * @param servletRequest the servlet request.
+     * @param parameterName the parameter name.
+     * @return the ordered, de-duped values, possibly empty, never {@code null}.
+     */
+    private List<String> getValues(ServletRequest servletRequest, String parameterName) {
+        String[] rawValues = servletRequest.getParameterValues(parameterName);
+        List<String> values = new ArrayList<>();
+        if (rawValues != null) {
+            for (String rawValue : rawValues) {
+                for (String value : rawValue.split(",")) {
+                    String trimmedValue = value.trim();
+                    if (trimmedValue.length() > 0 && !values.contains(trimmedValue)) {
+                        values.add(trimmedValue);
+                    }
+                }
+            }
+        }
+        return values;
     }
 
     /**
      * Adds embeds or links for all class-level LinkRel annotations for which embeds or links are allowed.
      *
      * @param halResource the resource.
+     * @param oldLinks    previously traversed links
      */
-    public void embedOrLinkClassLevelRels(HALResource<RestAddressableModel> halResource) {
+    public void embedOrLinkClassLevelRels(HALResource<RestAddressableModel> halResource, Link... oldLinks) {
         Projection projection = halResource.getContent().getProjection();
         getLinkRests(halResource.getContent().getClass()).stream().forEach((linkRest) -> {
             Link link = linkToSubResource(halResource.getContent(), linkRest.name());
-            if (projection.allowEmbedding(halResource, linkRest)) {
-                embedRelFromRepository(halResource, linkRest.name(), link, linkRest);
+            if (projection.allowEmbedding(halResource, linkRest, oldLinks)) {
+                embedRelFromRepository(halResource, linkRest.name(), link, linkRest, oldLinks);
                 halResource.add(link); // unconditionally link if embedding was allowed
             } else if (projection.allowLinking(halResource, linkRest)) {
                 halResource.add(link);
@@ -502,6 +601,32 @@ public class Utils {
      */
     void embedRelFromRepository(HALResource<? extends RestAddressableModel> resource,
                                         String rel, Link link, LinkRest linkRest) {
+        embedRelFromRepository(resource, rel, link, linkRest, new Link[] {});
+    }
+
+    /**
+     * Embeds a rel whose value comes from a {@link LinkRestRepository}, if the maximum embed level has not
+     * been exceeded yet.
+     * <p>
+     * The embed will be skipped if 1) the link repository reports that it is not embeddable or 2) the returned
+     * value is null and the LinkRest annotation has embedOptional = true.
+     * </p><p>
+     * Implementation note: The caller is responsible for ensuring that the projection allows the embed
+     * before calling this method.
+     * </p>
+     *
+     * @param resource the resource from which the embed will be made.
+     * @param rel the name of the rel.
+     * @param link the link.
+     * @param linkRest the LinkRest annotation (must have method defined).
+     * @param oldLinks    The previously traversed links
+     * @throws RepositoryNotFoundException if the link repository could not be found.
+     * @throws IllegalArgumentException if the method specified by the LinkRest could not be found in the
+     * link repository.
+     * @throws RuntimeException if any other problem occurs when trying to invoke the method.
+     */
+    void embedRelFromRepository(HALResource<? extends RestAddressableModel> resource,
+                                        String rel, Link link, LinkRest linkRest, Link... oldLinks) {
         if (resource.getContent().getEmbedLevel() == EMBED_MAX_LEVELS) {
             return;
         }
@@ -513,7 +638,7 @@ public class Utils {
             Object contentId = getContentIdForLinkMethod(resource.getContent(), method);
             try {
                 Object linkedObject = method.invoke(linkRepository, null, contentId, null, projection);
-                resource.embedResource(rel, wrapForEmbedding(resource, linkedObject, link));
+                resource.embedResource(rel, wrapForEmbedding(resource, linkedObject, link, oldLinks));
             } catch (InvocationTargetException e) {
                 if (e.getTargetException() instanceof RuntimeException) {
                     throw (RuntimeException) e.getTargetException();
@@ -618,17 +743,37 @@ public class Utils {
      */
     private Object wrapForEmbedding(HALResource<? extends RestAddressableModel> resource,
                                     Object linkedObject, Link link) {
+        return wrapForEmbedding(resource, linkedObject, link, new Link[] {});
+    }
+
+    /**
+     * Wraps the given linked object (retrieved from a link repository or link method on the rest item)
+     * in an object that is appropriate for embedding, if needed. Does not perform the actual embed; the
+     * caller is responsible for that.
+     *
+     * @param resource the resource from which the embed will be made.
+     * @param linkedObject the linked object.
+     * @param link the link, which is used if the linked object is a list or page, to determine the self link
+     *             and embed property name to use for the subresource.
+     * @param oldLinks    The previously traversed links
+     * @return the wrapped object, which will have an "embed level" one greater than the given parent resource.
+     */
+    private Object wrapForEmbedding(HALResource<? extends RestAddressableModel> resource,
+                                    Object linkedObject, Link link, Link... oldLinks) {
         int childEmbedLevel = resource.getContent().getEmbedLevel() + 1;
+        //Add the latest link to the list
+        Link[] newList = Arrays.copyOf(oldLinks, oldLinks.length + 1);
+        newList[oldLinks.length] = link;
         if (linkedObject instanceof RestAddressableModel) {
             RestAddressableModel restObject = (RestAddressableModel) linkedObject;
             restObject.setEmbedLevel(childEmbedLevel);
-            return converter.toResource(restObject);
+            return converter.toResource(restObject, newList);
         } else if (linkedObject instanceof Page) {
             // The first page has already been constructed by a link repository and we only need to wrap it
             Page<RestAddressableModel> page = (Page<RestAddressableModel>) linkedObject;
             return new EmbeddedPage(link.getHref(), page.map((restObject) -> {
                 restObject.setEmbedLevel(childEmbedLevel);
-                return converter.toResource(restObject);
+                return converter.toResource(restObject, newList);
             }), null, link.getRel());
         } else if (linkedObject instanceof List) {
             // The full list has been retrieved and we need to provide the first page for embedding
@@ -640,7 +785,7 @@ public class Utils {
                 return new EmbeddedPage(link.getHref(),
                         page.map((restObject) -> {
                             restObject.setEmbedLevel(childEmbedLevel);
-                            return converter.toResource(restObject);
+                            return converter.toResource(restObject, newList);
                         }),
                         list, link.getRel());
             } else {
@@ -677,5 +822,90 @@ public class Utils {
             }
         }
         return contentId;
+    }
+
+    /**
+     * Convert the input string in the primary key class according to the repository interface
+     * 
+     * @param repository
+     * @param pkStr
+     * @return
+     */
+    public Serializable castToPKClass(ReloadableEntityObjectRepository repository, String pkStr) {
+        return (Serializable) conversionService.convert(pkStr, repository.getPKClass());
+    }
+
+    /**
+     * Return the dspace api model object corresponding to the provided, not null, rest object. This only works when the
+     * rest object is supported by a {@link DSpaceRestRepository} that also implement the
+     * {@link ReloadableEntityObjectRepository} interface. If this is not the case the method will throw an
+     * IllegalArgumentException
+     * 
+     * @param context
+     *            the DSpace Context
+     * @param restObj
+     *            the not null rest object. If null the method will throws an {@link IllegalArgumentException}
+     * @return the dspace api model object corresponding to the provided, not null, rest object
+     * @throws IllegalArgumentException
+     *             if the restObj is not supported by a {@link DSpaceRestRepository} that also implement the
+     *             {@link ReloadableEntityObjectRepository} interface
+     * @throws SQLException
+     *             if a database error occur
+     */
+    public Object getDSpaceAPIObjectFromRest(Context context, BaseObjectRest restObj)
+            throws IllegalArgumentException, SQLException {
+        DSpaceRestRepository repository = getResourceRepositoryByCategoryAndModel(restObj.getCategory(),
+                restObj.getType());
+        Serializable pk = castToPKClass((ReloadableEntityObjectRepository) repository, restObj.getId().toString());
+        return ((ReloadableEntityObjectRepository) repository).findDomainObjectByPk(context, pk);
+    }
+
+    /**
+    * Get the rest object associated with the specified URI
+    * 
+    * @param context the DSpace context
+    * @param uri     the uri of a {@link BaseObjectRest}
+    * @return the {@link BaseObjectRest} identified by the provided uri
+    * @throws SQLException             if a database error occur
+    * @throws IllegalArgumentException if the uri is not valid
+    */
+    public BaseObjectRest getBaseObjectRestFromUri(Context context, String uri) throws SQLException {
+        String dspaceUrl = configurationService.getProperty("dspace.server.url");
+        // first check if the uri could be valid
+        if (!StringUtils.startsWith(uri, dspaceUrl)) {
+            throw new IllegalArgumentException("the supplied uri is not valid: " + uri);
+        }
+        // extract from the uri the category, model and id components
+        // they start after the dspaceUrl/api/{apiCategory}/{apiModel}/{id}
+        String[] uriParts = uri.substring(dspaceUrl.length() + (dspaceUrl.endsWith("/") ? 0 : 1) + "api/".length())
+                .split("/", 3);
+        if (uriParts.length != 3) {
+            throw new IllegalArgumentException("the supplied uri is not valid: " + uri);
+        }
+
+        DSpaceRestRepository repository;
+        try {
+            repository = getResourceRepository(uriParts[0], uriParts[1]);
+            if (!(repository instanceof ReloadableEntityObjectRepository)) {
+                throw new IllegalArgumentException("the supplied uri is not valid: " + uri);
+            }
+        } catch (RepositoryNotFoundException e) {
+            throw new IllegalArgumentException("the supplied uri is not valid: " + uri, e);
+        }
+
+        Serializable pk;
+        try {
+            // cast the string id in the uriParts to the real pk class
+            pk = castToPKClass((ReloadableEntityObjectRepository) repository, uriParts[2]);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("the supplied uri is not valid: " + uri, e);
+        }
+        try {
+            // disable the security as we only need to retrieve the object to further process the authorization
+            context.turnOffAuthorisationSystem();
+            return (BaseObjectRest) repository.findOne(context, pk);
+        } finally {
+            context.restoreAuthSystemState();
+        }
     }
 }

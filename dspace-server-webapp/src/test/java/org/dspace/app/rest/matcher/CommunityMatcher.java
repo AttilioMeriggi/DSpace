@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.dspace.content.Collection;
+import org.dspace.content.Community;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
@@ -31,8 +32,6 @@ public class CommunityMatcher {
                 hasJsonPath("$.uuid", is(uuid.toString())),
                 hasJsonPath("$.handle", is(handle)),
                 hasJsonPath("$.type", is("community")),
-                hasJsonPath("$._embedded.collections", Matchers.not(Matchers.empty())),
-                hasJsonPath("$._embedded.logo", Matchers.not(Matchers.empty())),
                 matchLinks(uuid)
         );
     }
@@ -53,6 +52,13 @@ public class CommunityMatcher {
     }
 
     public static Matcher<? super Object> matchCommunityEntry(String name, UUID uuid, String handle) {
+        return allOf(
+            matchProperties(name, uuid, handle),
+            matchLinks(uuid)
+        );
+    }
+
+    public static Matcher<? super Object> matchCommunityEntryFullProjection(String name, UUID uuid, String handle) {
         return allOf(
             matchProperties(name, uuid, handle),
             hasJsonPath("$._embedded.collections", Matchers.not(Matchers.empty())),
@@ -80,6 +86,7 @@ public class CommunityMatcher {
         return matchEmbeds(
                 "collections[]",
                 "logo",
+                "parentCommunity",
                 "subcommunities[]"
         );
     }
@@ -92,6 +99,7 @@ public class CommunityMatcher {
                 "collections",
                 "logo",
                 "self",
+                "parentCommunity",
                 "subcommunities"
         );
     }
@@ -108,4 +116,10 @@ public class CommunityMatcher {
         );
     }
 
+    public static Matcher<? super Object> matchCommunity(Community community) {
+        return allOf(hasJsonPath("$.uuid", is(community.getID().toString())),
+                hasJsonPath("$.name", is(community.getName())),
+                hasJsonPath("$.type", is("community")),
+                hasJsonPath("$.handle", is(community.getHandle())));
+    }
 }

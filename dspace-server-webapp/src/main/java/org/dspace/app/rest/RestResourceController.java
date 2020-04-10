@@ -36,6 +36,7 @@ import org.dspace.app.rest.converter.ConverterService;
 import org.dspace.app.rest.converter.JsonPatchConverter;
 import org.dspace.app.rest.exception.DSpaceBadRequestException;
 import org.dspace.app.rest.exception.PaginationException;
+import org.dspace.app.rest.exception.RESTAuthorizationException;
 import org.dspace.app.rest.exception.RepositoryMethodNotImplementedException;
 import org.dspace.app.rest.exception.RepositoryNotFoundException;
 import org.dspace.app.rest.exception.RepositorySearchMethodNotFoundException;
@@ -336,7 +337,7 @@ public class RestResourceController implements InitializingBean {
      * @return
      */
     @RequestMapping(method = RequestMethod.GET, value = REGEX_REQUESTMAPPING_IDENTIFIER_AS_STRING_VERSION_STRONG +
-        "/{rel}/{relid:^(?!.*?(?:search)).*$}")
+        "/{rel}/{relid}")
     public ResourceSupport findRel(HttpServletRequest request, HttpServletResponse response,
                                    @PathVariable String apiCategory,
                                    @PathVariable String model, @PathVariable String id, @PathVariable String rel,
@@ -580,13 +581,14 @@ public class RestResourceController implements InitializingBean {
                                                                                      MultipartFile uploadfile) {
         checkModelPluralForm(apiCategory, model);
         DSpaceRestRepository<RestAddressableModel, ID> repository = utils.getResourceRepository(apiCategory, model);
-
         RestAddressableModel modelObject = null;
         try {
             modelObject = repository.upload(request, apiCategory, model, id, uploadfile);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return ControllerUtils.toEmptyResponse(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException("Error " + e.getMessage() +
+                                       " uploading file to " + model + " with ID= " + id, e);
+        } catch ( AuthorizeException ae) {
+            throw new RESTAuthorizationException(ae);
         }
         DSpaceResource result = converter.toResource(modelObject);
         return ControllerUtils.toResponseEntity(HttpStatus.CREATED, new HttpHeaders(), result);
@@ -798,14 +800,14 @@ public class RestResourceController implements InitializingBean {
                         Page<? extends RestModel> pageResult = (Page<? extends RestAddressableModel>) linkMethod
                                 .invoke(linkRepository, request, uuid, page, utils.obtainProjection());
 
-                    if (pageResult == null) {
-                        // Link repositories may throw an exception or return an empty page,
-                        // but must never return null for a paged subresource.
-                        log.error("Paged subresource link repository " + linkRepository.getClass()
-                                + " incorrectly returned null for request with id " + uuid);
-                        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                        return null;
-                    }
+                        if (pageResult == null) {
+                            // Link repositories may throw an exception or return an empty page,
+                            // but must never return null for a paged subresource.
+                            log.error("Paged subresource link repository " + linkRepository.getClass()
+                                    + " incorrectly returned null for request with id " + uuid);
+                            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                            return null;
+                        }
 
                         Link link = null;
                         String querystring = request.getQueryString();
@@ -814,11 +816,6 @@ public class RestResourceController implements InitializingBean {
                                 .slash(subpath + '?' + querystring).withSelfRel();
                         } else {
                             link = linkTo(this.getClass(), apiCategory, model).slash(uuid).slash(subpath).withSelfRel();
-                        }
-
-                        if (!pageResult.hasContent()) {
-                            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                            return null;
                         }
 
                         return new Resource(new EmbeddedPage(link.getHref(),
@@ -921,7 +918,6 @@ public class RestResourceController implements InitializingBean {
                                                                                       Pageable page,
                                                                                       PagedResourcesAssembler assembler,
                                                                                       HttpServletResponse response) {
-
         DSpaceRestRepository<T, ?> repository = utils.getResourceRepository(apiCategory, model);
         Link link = linkTo(methodOn(this.getClass(), apiCategory, model).findAll(apiCategory, model,
                                                                                  page, assembler, response))

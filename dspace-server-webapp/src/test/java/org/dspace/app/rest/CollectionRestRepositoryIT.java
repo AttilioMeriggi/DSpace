@@ -24,8 +24,10 @@ import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dspace.app.rest.builder.CollectionBuilder;
 import org.dspace.app.rest.builder.CommunityBuilder;
+import org.dspace.app.rest.builder.EPersonBuilder;
 import org.dspace.app.rest.converter.ConverterService;
 import org.dspace.app.rest.matcher.CollectionMatcher;
+import org.dspace.app.rest.matcher.CommunityMatcher;
 import org.dspace.app.rest.matcher.HalMatcher;
 import org.dspace.app.rest.matcher.MetadataMatcher;
 import org.dspace.app.rest.matcher.PageMatcher;
@@ -36,6 +38,7 @@ import org.dspace.app.rest.projection.Projection;
 import org.dspace.app.rest.test.AbstractControllerIntegrationTest;
 import org.dspace.app.rest.test.MetadataPatchSuite;
 import org.dspace.authorize.service.AuthorizeService;
+import org.dspace.authorize.service.ResourcePolicyService;
 import org.dspace.content.Collection;
 import org.dspace.content.Community;
 import org.dspace.core.Constants;
@@ -52,6 +55,9 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
 
     @Autowired
     AuthorizeService authorizeService;
+
+    @Autowired
+    ResourcePolicyService resoucePolicyService;
 
     @Test
     public void findAllTest() throws Exception {
@@ -78,9 +84,113 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                    .andExpect(status().isOk())
                    .andExpect(content().contentType(contentType))
                    .andExpect(jsonPath("$._embedded.collections", Matchers.containsInAnyOrder(
-                       CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle()),
-                       CollectionMatcher.matchCollectionEntry(col2.getName(), col2.getID(), col2.getHandle())
+                       CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                            col1.getHandle()),
+                       CollectionMatcher.matchCollectionEntryFullProjection(col2.getName(), col2.getID(),
+                                                                            col2.getHandle())
                    )));
+    }
+
+    @Test
+    public void findAllUnAuthenticatedTest() throws Exception {
+        context.turnOffAuthorisationSystem();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                .withName("Parent Community")
+                .build();
+
+        Collection col1 = CollectionBuilder.createCollection(context, parentCommunity)
+                .withName("Collection 1")
+                .build();
+        Collection col2 = CollectionBuilder.createCollection(context, parentCommunity)
+                .withName("Collection 2")
+                .build();
+
+        resoucePolicyService.removePolicies(context, col2, Constants.READ);
+        context.restoreAuthSystemState();
+
+        // anonymous can see only public collections
+        getClient().perform(get("/api/core/collections"))
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$._embedded.collections", Matchers.contains(
+                         CollectionMatcher.matchCollection(col1))))
+                  .andExpect(jsonPath("$.page.totalElements", is(1)));
+    }
+
+    @Test
+    public void findAllForbiddenTest() throws Exception {
+        context.turnOffAuthorisationSystem();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                .withName("Parent Community")
+                .build();
+
+        Collection col1 = CollectionBuilder.createCollection(context, parentCommunity)
+                .withName("Collection 1")
+                .build();
+        Collection col2 = CollectionBuilder.createCollection(context, parentCommunity)
+                .withName("Collection 2")
+                .build();
+
+        resoucePolicyService.removePolicies(context, col2, Constants.READ);
+        context.restoreAuthSystemState();
+
+        // eperson logged can see only public collections
+        String tokenEperson = getAuthToken(eperson.getEmail(), password);
+        getClient(tokenEperson).perform(get("/api/core/collections"))
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$._embedded.collections", Matchers.contains(
+                         CollectionMatcher.matchCollection(col1))))
+                  .andExpect(jsonPath("$.page.totalElements", is(1)));
+    }
+
+    @Test
+    public void findAllGrantAccessAdminsTest() throws Exception {
+        context.turnOffAuthorisationSystem();
+
+        EPerson parentAdmin = EPersonBuilder.createEPerson(context)
+                .withEmail("eperson1@mail.com")
+                .withPassword("qwerty01")
+                .build();
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                .withName("Parent Community")
+                .withAdminGroup(parentAdmin)
+                .build();
+
+        EPerson col1Admin = EPersonBuilder.createEPerson(context)
+                .withEmail("eperson2@mail.com")
+                .withPassword("qwerty02")
+                .build();
+        Collection col1 = CollectionBuilder.createCollection(context, parentCommunity)
+                .withName("Collection 1")
+                .withAdminGroup(col1Admin)
+                .build();
+
+        Collection col2 = CollectionBuilder.createCollection(context, parentCommunity)
+                .withName("Collection 2")
+                .build();
+
+        resoucePolicyService.removePolicies(context, parentCommunity, Constants.READ);
+        resoucePolicyService.removePolicies(context, col1, Constants.READ);
+        context.restoreAuthSystemState();
+
+        // parent community admin can see all sub collections
+        String tokenParentAdmin = getAuthToken(parentAdmin.getEmail(), "qwerty01");
+        getClient(tokenParentAdmin).perform(get("/api/core/collections"))
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$._embedded.collections", Matchers.containsInAnyOrder(
+                         CollectionMatcher.matchCollection(col1),
+                         CollectionMatcher.matchCollection(col2))))
+                  .andExpect(jsonPath("$.page.totalElements", is(2)));
+
+        // admin of col1 can see owner collections and any public collections
+        String tokenCol1Admin = getAuthToken(col1Admin.getEmail(), "qwerty02");
+        getClient(tokenCol1Admin).perform(get("/api/core/collections"))
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$._embedded.collections", Matchers.containsInAnyOrder(
+                         CollectionMatcher.matchCollection(col1),
+                         CollectionMatcher.matchCollection(col2))))
+                  .andExpect(jsonPath("$.page.totalElements", is(2)));
     }
 
     @Test
@@ -110,11 +220,13 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                 .andExpect(status().isOk())
                    .andExpect(content().contentType(contentType))
                    .andExpect(jsonPath("$._embedded.collections", Matchers.contains(
-                       CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle())
+                       CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                            col1.getHandle())
                    )))
                    .andExpect(jsonPath("$._embedded.collections", Matchers.not(
                        Matchers.contains(
-                           CollectionMatcher.matchCollectionEntry(col2.getName(), col2.getID(), col2.getHandle())
+                           CollectionMatcher.matchCollectionEntryFullProjection(col2.getName(), col2.getID(),
+                                                                                col2.getHandle())
                        )
                    )));
 
@@ -125,11 +237,13 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                    .andExpect(status().isOk())
                    .andExpect(content().contentType(contentType))
                    .andExpect(jsonPath("$._embedded.collections", Matchers.contains(
-                       CollectionMatcher.matchCollectionEntry(col2.getName(), col2.getID(), col2.getHandle())
+                       CollectionMatcher.matchCollectionEntryFullProjection(col2.getName(), col2.getID(),
+                                                                            col2.getHandle())
                    )))
                    .andExpect(jsonPath("$._embedded.collections", Matchers.not(
                        Matchers.contains(
-                           CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle())
+                           CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                                col1.getHandle())
                        )
                    )));
     }
@@ -176,6 +290,100 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
     }
 
     @Test
+    public void findOneCollectionUnAuthenticatedTest() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                .withName("Parent Community")
+                .build();
+
+        Collection col1 = CollectionBuilder.createCollection(context, parentCommunity)
+                .withName("Collection 1")
+                .build();
+
+        resoucePolicyService.removePolicies(context, col1, Constants.READ);
+        context.restoreAuthSystemState();
+
+        getClient().perform(get("/api/core/collections/" + col1.getID()))
+                   .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void findOneCollectionForbiddenTest() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                .withName("Parent Community")
+                .build();
+
+        Collection col1 = CollectionBuilder.createCollection(context, parentCommunity)
+                .withName("Collection 1")
+                .build();
+
+        resoucePolicyService.removePolicies(context, col1, Constants.READ);
+        context.restoreAuthSystemState();
+
+        String tokenEperson = getAuthToken(eperson.getEmail(), password);
+        getClient(tokenEperson).perform(get("/api/core/collections/" + col1.getID()))
+                   .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void findOneCollectionGrantAccessAdminsTest() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        EPerson parentAdmin = EPersonBuilder.createEPerson(context)
+                .withEmail("eperson1@mail.com")
+                .withPassword("qwerty01")
+                .build();
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                .withName("Parent Community")
+                .withAdminGroup(parentAdmin)
+                .build();
+
+        EPerson col1Admin = EPersonBuilder.createEPerson(context)
+                .withEmail("eperson2@mail.com")
+                .withPassword("qwerty02")
+                .build();
+        Collection col1 = CollectionBuilder.createCollection(context, parentCommunity)
+                .withName("Collection 1")
+                .withAdminGroup(col1Admin)
+                .build();
+
+        EPerson col2Admin = EPersonBuilder.createEPerson(context)
+                .withEmail("eperson3@mail.com")
+                .withPassword("qwerty03")
+                .build();
+        Collection col2 = CollectionBuilder.createCollection(context, parentCommunity)
+                .withName("Collection 2")
+                .withAdminGroup(col2Admin)
+                .build();
+
+        resoucePolicyService.removePolicies(context, parentCommunity, Constants.READ);
+        resoucePolicyService.removePolicies(context, col1, Constants.READ);
+        resoucePolicyService.removePolicies(context, col2, Constants.READ);
+        context.restoreAuthSystemState();
+
+        String tokenParentAdmin = getAuthToken(parentAdmin.getEmail(), "qwerty01");
+        getClient(tokenParentAdmin).perform(get("/api/core/collections/" + col1.getID()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$",
+                        Matchers.is((CollectionMatcher.matchCollection(col1)))));
+
+        String tokenCol1Admin = getAuthToken(col1Admin.getEmail(), "qwerty02");
+        getClient(tokenCol1Admin).perform(get("/api/core/collections/" + col1.getID()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$",
+                        Matchers.is((CollectionMatcher.matchCollection(col1)))));
+
+        String tokenCol2Admin = getAuthToken(col2Admin.getEmail(), "qwerty03");
+        getClient(tokenCol2Admin).perform(get("/api/core/collections/" + col1.getID()))
+                .andExpect(status().isForbidden());
+    }
+    @Test
     public void findOneCollectionRelsTest() throws Exception {
 
         //We turn off the authorization system in order to create the structure as defined below
@@ -202,11 +410,13 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                    .andExpect(status().isOk())
                    .andExpect(content().contentType(contentType))
                    .andExpect(jsonPath("$", is(
-                       CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle())
+                       CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                            col1.getHandle())
                    )))
                    .andExpect(jsonPath("$", Matchers.not(
                        is(
-                           CollectionMatcher.matchCollectionEntry(col2.getName(), col2.getID(), col2.getHandle())
+                           CollectionMatcher.matchCollectionEntryFullProjection(col2.getName(), col2.getID(),
+                                                                                col2.getHandle())
                        )))
                    )
         ;
@@ -348,11 +558,13 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                    .andExpect(status().isOk())
                    .andExpect(content().contentType(contentType))
                    .andExpect(jsonPath("$", is(
-                       CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle())
+                       CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                            col1.getHandle())
                    )))
                    .andExpect(jsonPath("$", Matchers.not(
                        is(
-                           CollectionMatcher.matchCollectionEntry(col2.getName(), col2.getID(), col2.getHandle())
+                           CollectionMatcher.matchCollectionEntryFullProjection(col2.getName(), col2.getID(),
+                                                                                col2.getHandle())
                        ))));
     }
 
@@ -376,7 +588,8 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                    .andExpect(status().isOk())
                    .andExpect(content().contentType(contentType))
                    .andExpect(jsonPath("$", Matchers.is(
-                       CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle())
+                       CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                            col1.getHandle())
                    )))
                    .andExpect(jsonPath("$._links.self.href", Matchers.containsString("/api/core/collections")))
         ;
@@ -403,7 +616,7 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                    .andExpect(status().isOk())
                    .andExpect(content().contentType(contentType))
                    .andExpect(jsonPath("$", Matchers.is(
-                       CollectionMatcher.matchCollectionEntry("Electronic theses and dissertations",
+                       CollectionMatcher.matchCollectionEntryFullProjection("Electronic theses and dissertations",
                                                               col1.getID(), col1.getHandle())
                    )))
                    .andExpect(jsonPath("$._links.self.href",
@@ -445,10 +658,11 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                         .andExpect(status().isOk())
                         .andExpect(content().contentType(contentType))
                         .andExpect(jsonPath("$", Matchers.is(
-                            CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle())
+                            CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                                 col1.getHandle())
                         )))
                         .andExpect(jsonPath("$._links.self.href",
-                                            Matchers.containsString("/api/core/collections")))        ;
+                                            Matchers.containsString("/api/core/collections")));
         getClient(token).perform(delete("/api/core/collections/" + col1.getID().toString()))
                         .andExpect(status().isNoContent())
         ;
@@ -489,10 +703,11 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                         .andExpect(status().isOk())
                         .andExpect(content().contentType(contentType))
                         .andExpect(jsonPath("$", Matchers.is(
-                            CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle())
+                            CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                                 col1.getHandle())
                         )))
                         .andExpect(jsonPath("$._links.self.href",
-                                            Matchers.containsString("/api/core/collections")))        ;
+                                            Matchers.containsString("/api/core/collections")));
         getClient().perform(delete("/api/core/collections/" + col1.getID().toString()))
                         .andExpect(status().isUnauthorized())
         ;
@@ -532,9 +747,11 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
         getClient(authToken).perform(post("/api/core/collections")
                                          .content(mapper.writeValueAsBytes(collectionRest))
                                          .param("parent", parentCommunity.getID().toString())
-                                         .contentType(contentType))
+                                         .contentType(contentType)
+                                         .param("projection", "full"))
                             .andExpect(status().isCreated())
                             .andExpect(content().contentType(contentType))
+                            .andExpect(jsonPath("$", CollectionMatcher.matchFullEmbeds()))
                             .andExpect(jsonPath("$", Matchers.allOf(
                                 hasJsonPath("$.id", not(empty())),
                                 hasJsonPath("$.uuid", not(empty())),
@@ -554,6 +771,13 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                                             "Title Text")
                                 )))));
 
+        getClient(authToken).perform(post("/api/core/collections")
+                .content(mapper.writeValueAsBytes(collectionRest))
+                .param("parent", parentCommunity.getID().toString())
+                .contentType(contentType))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(contentType))
+                .andExpect(jsonPath("$", HalMatcher.matchNoEmbeds()));
     }
 
     @Test
@@ -701,10 +925,11 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                         .andExpect(status().isOk())
                         .andExpect(content().contentType(contentType))
                         .andExpect(jsonPath("$", Matchers.is(
-                            CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle())
+                            CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                                 col1.getHandle())
                         )))
                         .andExpect(jsonPath("$._links.self.href",
-                                            Matchers.containsString("/api/core/collections")))        ;
+                                            Matchers.containsString("/api/core/collections")));
         getClient(token).perform(delete("/api/core/collections/" + col1.getID().toString()))
                         .andExpect(status().isNoContent())
         ;
@@ -737,7 +962,8 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                    .andExpect(status().isOk())
                    .andExpect(content().contentType(contentType))
                    .andExpect(jsonPath("$", Matchers.is(
-                       CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle())
+                       CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                            col1.getHandle())
                    )))
                    .andExpect(jsonPath("$._links.self.href", Matchers.containsString("/api/core/collections")))
         ;
@@ -767,7 +993,7 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                    .andExpect(status().isOk())
                    .andExpect(content().contentType(contentType))
                    .andExpect(jsonPath("$", Matchers.is(
-                       CollectionMatcher.matchCollectionEntry("Electronic theses and dissertations",
+                       CollectionMatcher.matchCollectionEntryFullProjection("Electronic theses and dissertations",
                                                               col1.getID(), col1.getHandle())
                    )))
                    .andExpect(jsonPath("$._links.self.href",
@@ -908,9 +1134,140 @@ public class CollectionRestRepositoryIT extends AbstractControllerIntegrationTes
                    .andExpect(status().isOk())
                    .andExpect(content().contentType(contentType))
                    .andExpect(jsonPath("$._embedded.collections", Matchers.containsInAnyOrder(
-                       CollectionMatcher.matchCollectionEntry(col1.getName(), col1.getID(), col1.getHandle()),
-                       CollectionMatcher.matchCollectionEntry(col2.getName(), col2.getID(), col2.getHandle())
+                       CollectionMatcher.matchCollectionEntryFullProjection(col1.getName(), col1.getID(),
+                                                                            col1.getHandle()),
+                       CollectionMatcher.matchCollectionEntryFullProjection(col2.getName(), col2.getID(),
+                                                                            col2.getHandle())
                    )))
-                   .andExpect(jsonPath("$.page", PageMatcher.pageEntryWithTotalPagesAndElements(0, 20, 1, 2)));
+                   .andExpect(jsonPath("$.page", PageMatcher.pageEntryWithTotalPagesAndElements(0, 20,
+                                                                                                1, 2)));
+    }
+
+    @Test
+    public void projectonLevelTest() throws Exception {
+        //We turn off the authorization system in order to create the structure as defined below
+        context.turnOffAuthorisationSystem();
+        //** GIVEN **
+        //1. A community-collection structure with one parent community with sub-community and one collection.
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                                          .withName("Parent Community")
+                                          .build();
+        Community child1 = CommunityBuilder.createSubCommunity(context, parentCommunity)
+                                           .withName("Sub Community")
+                                           .build();
+        Community child1child = CommunityBuilder.createSubCommunity(context, child1)
+                                           .withName("Sub Community Two")
+                                           .build();
+        Collection col1 = CollectionBuilder.createCollection(context, child1)
+                                           .withName("Collection 1")
+                                           .withLogo("TestingContentForLogo")
+                                           .build();
+        Collection col2 = CollectionBuilder.createCollection(context, child1child).withName("Collection 2").build();
+
+        getClient().perform(get("/api/core/collections/" + col1.getID())
+                            .param("projection", "level")
+                            .param("embedLevelDepth", "1"))
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$", CollectionMatcher.matchCollectionEntry(col1.getName(),
+                                                                                   col1.getID(),
+                                                                                   col1.getHandle())))
+                   // .exists() makes sure that the embed is there, but it could be empty
+                   .andExpect(jsonPath("$._embedded.mappedItems").exists())
+                   // .isEmpty() makes sure that the embed is there, but that there's no actual data
+                   .andExpect(jsonPath("$._embedded.mappedItems._embedded.mappedItems").isEmpty())
+                   .andExpect(jsonPath("$._embedded.parentCommunity",
+                                       CommunityMatcher.matchCommunityEntry(child1.getName(),
+                                                                            child1.getID(),
+                                                                            child1.getHandle())))
+                   // .doesNotExist() makes sure that this section is not embedded, it's not there at all
+                   .andExpect(jsonPath("$._embedded.parentCommunity._embedded.subcommunities").doesNotExist())
+                   .andExpect(jsonPath("$._embedded.logo", Matchers.not(Matchers.empty())))
+                   // .doesNotExist() makes sure that this section is not embedded, it's not there at all
+                   .andExpect(jsonPath("$._embedded.logo._embedded.format").doesNotExist());
+
+        getClient().perform(get("/api/core/collections/" + col1.getID())
+                            .param("projection", "level")
+                            .param("embedLevelDepth", "3"))
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$", CollectionMatcher.matchCollectionEntry(col1.getName(),
+                                                                                   col1.getID(),
+                                                                                   col1.getHandle())))
+                   // .exists() makes sure that the embed is there, but it could be empty
+                   .andExpect(jsonPath("$._embedded.mappedItems").exists())
+                   // .isEmpty() makes sure that the embed is there, but that there's no actual data
+                   .andExpect(jsonPath("$._embedded.mappedItems._embedded.mappedItems").isEmpty())
+                   .andExpect(jsonPath("$._embedded.parentCommunity",
+                                       CommunityMatcher.matchCommunityEntry(child1.getName(),
+                                                                            child1.getID(),
+                                                                            child1.getHandle())))
+                   // .exists() makes sure that the embed is there, but it could be empty
+                   .andExpect(jsonPath("$._embedded.parentCommunity._embedded.subcommunities").exists())
+                   .andExpect(jsonPath("$._embedded.parentCommunity._embedded.subcommunities._embedded.subcommunities",
+                                       Matchers.contains(CommunityMatcher.matchCommunityEntry(child1child.getID(),
+                                                                                              child1child.getHandle())
+                   )))
+                   .andExpect(jsonPath("$._embedded.parentCommunity._embedded.subcommunities" +
+                                           "._embedded.subcommunities[0]._embedded.collections._embedded.collections",
+                                       Matchers.contains(CollectionMatcher.matchCollectionEntry(col2.getName(),
+                                                                                                col2.getID(),
+                                                                                                col2.getHandle())
+                   )))
+                   // .doesNotExist() makes sure that this section is not embedded, it's not there at all
+                   .andExpect(jsonPath("$._embedded.parentCommunity._embedded.subcommunities" +
+                                           "._embedded.subcommunities[0]._embedded.collections._embedded" +
+                                           ".collections[0]._embedded.logo").doesNotExist())
+                   .andExpect(jsonPath("$._embedded.logo", Matchers.not(Matchers.empty())))
+                   // .exists() makes sure that the embed is there, but it could be empty
+                   .andExpect(jsonPath("$._embedded.logo._embedded.format").exists());
+    }
+
+    @Test
+    public void projectonLevelEmbedLevelDepthHigherThanEmbedMaxBadRequestTest() throws Exception {
+        //We turn off the authorization system in order to create the structure as defined below
+        context.turnOffAuthorisationSystem();
+        //** GIVEN **
+        //1. A community-collection structure with one parent community with sub-community and one collection.
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                                          .withName("Parent Community")
+                                          .build();
+        Community child1 = CommunityBuilder.createSubCommunity(context, parentCommunity)
+                                           .withName("Sub Community")
+                                           .build();
+        Community child1child = CommunityBuilder.createSubCommunity(context, child1)
+                                                .withName("Sub Community Two")
+                                                .build();
+        Collection col1 = CollectionBuilder.createCollection(context, child1)
+                                           .withName("Collection 1")
+                                           .withLogo("TestingContentForLogo")
+                                           .build();
+
+        getClient().perform(get("/api/core/collections/" + col1.getID())
+                                .param("projection", "level")
+                                .param("embedLevelDepth", "100"))
+                   .andExpect(status().isBadRequest());
+    }
+    @Test
+    public void projectonLevelEmbedLevelDepthNotPresentBadRequestTest() throws Exception {
+        //We turn off the authorization system in order to create the structure as defined below
+        context.turnOffAuthorisationSystem();
+        //** GIVEN **
+        //1. A community-collection structure with one parent community with sub-community and one collection.
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                                          .withName("Parent Community")
+                                          .build();
+        Community child1 = CommunityBuilder.createSubCommunity(context, parentCommunity)
+                                           .withName("Sub Community")
+                                           .build();
+        Community child1child = CommunityBuilder.createSubCommunity(context, child1)
+                                                .withName("Sub Community Two")
+                                                .build();
+        Collection col1 = CollectionBuilder.createCollection(context, child1)
+                                           .withName("Collection 1")
+                                           .withLogo("TestingContentForLogo")
+                                           .build();
+
+        getClient().perform(get("/api/core/collections/" + col1.getID())
+                                .param("projection", "level"))
+                   .andExpect(status().isBadRequest());
     }
 }
