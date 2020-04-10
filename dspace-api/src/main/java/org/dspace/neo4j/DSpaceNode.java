@@ -31,6 +31,11 @@ public class DSpaceNode {
         this.relations = relations;
     }
 
+    public DSpaceNode(String IDDB, Map<String, List<String>> metadata) {
+        this.IDDB = IDDB;
+        this.metadata = metadata;
+    }
+
     public String getEntityType() {
         return entityType;
     }

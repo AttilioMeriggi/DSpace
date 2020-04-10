@@ -36,7 +36,7 @@ public class Neo4jConsumer implements Consumer {
 
         DSpaceObject object = event.getObject(ctx);
 
-        DSpaceNode dSpaceNode = neo4jService.convertItem(ctx, event.getObjectID());
+        //DSpaceNode dSpaceNode = neo4jService.convertItem(ctx, event.getObjectID());
 
         int et = event.getEventType();
 
@@ -44,7 +44,7 @@ public class Neo4jConsumer implements Consumer {
         switch (et) {
             case Event.CREATE:
                 //neo4jService.createUpdateNode(dSpaceNode);
-                neo4jService.insertItem(ctx, event.getObjectID());
+                //neo4jService.insertItem(ctx, event.getObjectID());
             case Event.MODIFY:
                 //neo4jService.createUpdateNode(dSpaceNode);
             case Event.MODIFY_METADATA:

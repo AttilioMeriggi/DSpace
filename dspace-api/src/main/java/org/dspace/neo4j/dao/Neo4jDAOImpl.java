@@ -209,7 +209,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @return list maps properties nodes or EmptyList
      */
     @Override
-    public List<Map<String, Object>> read_nodes_type(DSpaceNode dsnode) {
+    public List<Map<String, Object>> readNodesByType(DSpaceNode dsnode) {
         AuthenticationDriver auth_driver = getAuthDriver();
         String entity_type = dsnode.getEntityType();
         List<Map<String, Object>> list_results_maps = new ArrayList<Map<String, Object>>();
@@ -248,7 +248,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @return node map with all properties or EmptyMap
      */
     @Override
-    public Map<String, Object> read_node_by_id(DSpaceNode dsnode) {
+    public Map<String, Object> readNodeById(DSpaceNode dsnode) {
         AuthenticationDriver auth_driver = getAuthDriver();
         String entity_type = dsnode.getEntityType();
         Map<String, Object> properties_map = new HashMap<String, Object>();
@@ -282,7 +282,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * 
      */
     @Override
-    public Map<String, Object> read_properties_rel(DSpaceNode dsnode1, DSpaceNode dsnode2) {
+    public Map<String, Object> readPropertiesRel(DSpaceNode dsnode1, DSpaceNode dsnode2) {
         AuthenticationDriver auth_driver = getAuthDriver();
         Map<String, Object> properties_map = new HashMap<String, Object>();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
@@ -313,15 +313,13 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @return list maps properties node or EmptyList
      */
     @Override
-    public List<Map<String, Object>> read_nodes_by_depth(DSpaceNode dsnode, int depth) {
+    public Map<String, DSpaceNode> readNodesByDepth(String IDDB, int depth) {
         AuthenticationDriver auth_driver = getAuthDriver();
-        String entity_type = dsnode.getEntityType();
-        List<Map<String, Object>> list_properties_map = new ArrayList<Map<String, Object>>();
-        Map<String, Object> properties_map = new HashMap<String, Object>();
+        Map<String, DSpaceNode> final_map = new HashMap<String, DSpaceNode>();
+        Map<String, Object> record_map = new HashMap<String, Object>();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             StringBuilder query = new StringBuilder();
-            query.append("MATCH (start:");
-            query.append(entity_type);
+            query.append("MATCH (start");
             query.append("{IDDB:$x})-[*1..");
             query.append(depth);
             query.append("]-(ends) ");
@@ -329,32 +327,44 @@ public class Neo4jDAOImpl implements Neo4jDAO {
             query.append("RETURN properties(ends)");
 
             String final_query = query.toString();
-            Result result = session.run(final_query, Values.parameters("x", dsnode.getIDDB()));
+            Result result = session.run(final_query, Values.parameters("x", IDDB));
             for (Record record : result.list()) {
-                properties_map = record.asMap();
-                list_properties_map.add(properties_map);
-            }
-
-            if (list_properties_map.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            StringBuilder start = new StringBuilder();
-            start.append("IDDB=");
-            start.append(dsnode.getIDDB());
-            start.append(",");
-            for (Map<String, Object> maps : list_properties_map) {
-                for (String s : maps.keySet()) {
-                    if (maps.get(s).toString().contains(start)) {
-                        list_properties_map.remove(maps);
+                String ID = "";
+                Map<String, List<String>> currMetadata = new HashMap<String, List<String>>();
+                DSpaceNode currNode = new DSpaceNode(ID, currMetadata);
+                record_map = record.asMap();
+                for (String s : record_map.keySet()) {
+                    Map<String, Object> o = (Map<String, Object>) record_map.get(s);
+                    for (String s2 : o.keySet()) {
+                        switch (o.get(s2).getClass().toString()) {
+                            case "class java.lang.String":
+                                ID = (String) o.get(s2);
+                                break;
+                            case "class java.util.Collections$UnmodifiableRandomAccessList":
+                            case "class java.util.Collections$SingletonList":
+                                List<String> properties = (List<String>) o.get(s2);
+                                currMetadata.put(s2, properties);
+                                break;
+                            default:
+                        }
+                        currNode.setIDDB(ID);
+                        currNode.setMetadata(currMetadata);
                     }
                 }
+                if (!currNode.getIDDB().equals(IDDB)) {
+                    final_map.put(currNode.getIDDB(), currNode);
+                }
             }
+
+            if (final_map.isEmpty()) {
+                return Collections.emptyMap();
+            }
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
         }
-        return list_properties_map;
+        return final_map;
     }
 
     public void setAuthDriver(AuthenticationDriver authDriver) {

@@ -114,23 +114,23 @@ public class Neo4jServiceImpl implements Neo4jService {
     }
 
     @Override
-    public List<Map<String, Object>> read_nodes_type(DSpaceNode dsnode) {
-        return neo4jDAO.read_nodes_type(dsnode);
+    public List<Map<String, Object>> readNodesByType(DSpaceNode dsnode) {
+        return neo4jDAO.readNodesByType(dsnode);
     }
 
     @Override
-    public Map<String, Object> read_node_by_id(DSpaceNode dsnode) {
-        return neo4jDAO.read_node_by_id(dsnode);
+    public Map<String, Object> readNodeById(DSpaceNode dsnode) {
+        return neo4jDAO.readNodeById(dsnode);
     }
 
     @Override
-    public Map<String, Object> read_properties_rel(DSpaceNode dsnode1, DSpaceNode dsnode2) {
-        return neo4jDAO.read_properties_rel(dsnode1, dsnode2);
+    public Map<String, Object> readPropertiesRel(DSpaceNode dsnode1, DSpaceNode dsnode2) {
+        return neo4jDAO.readPropertiesRel(dsnode1, dsnode2);
     }
 
     @Override
-    public List<Map<String, Object>> read_nodes_by_depth(DSpaceNode dsnode, int depth) {
-        return neo4jDAO.read_nodes_by_depth(dsnode, depth);
+    public Map<String, DSpaceNode> readNodesByDepth(String IDDB, int depth) {
+        return neo4jDAO.readNodesByDepth(IDDB, depth);
     }
 
     @Override

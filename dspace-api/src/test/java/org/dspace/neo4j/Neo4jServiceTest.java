@@ -170,7 +170,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, null);
         neo4jService.createUpdateNode(researcher_1);
 
-        List<Map<String, Object>> result = neo4jService.read_nodes_type(generic_researcher);
+        List<Map<String, Object>> result = neo4jService.readNodesByType(generic_researcher);
         assertEquals(1, result.size());
     }
 
@@ -189,8 +189,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, list_rel_res1);
         neo4jService.createUpdateNode(researcher_1);
 
-        List<Map<String, Object>> result_type_researcher = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result_type_publication = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result_type_researcher = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result_type_publication = neo4jService.readNodesByType(generic_publication);
         assertEquals(1, result_type_researcher.size());
         assertEquals(1, result_type_publication.size());
     }
@@ -209,8 +209,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(researcher_1);
         neo4jService.createUpdateNode(researcher_2);
 
-        List<Map<String, Object>> result1_type_res = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result1_type_pub = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result1_type_res = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result1_type_pub = neo4jService.readNodesByType(generic_publication);
         assertEquals(2, result1_type_res.size());
         assertTrue(result1_type_pub.isEmpty());
 
@@ -222,8 +222,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, list_rel_pub1);
         neo4jService.createUpdateNode(publication_1);
 
-        List<Map<String, Object>> result2_type_res = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result2_type_pub = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result2_type_res = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result2_type_pub = neo4jService.readNodesByType(generic_publication);
         assertEquals(2, result2_type_res.size());
         assertEquals(1, result2_type_pub.size());
     }
@@ -242,8 +242,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(researcher_1);
         neo4jService.createUpdateNode(researcher_2);
 
-        List<Map<String, Object>> result1_type_res = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result1_type_pub = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result1_type_res = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result1_type_pub = neo4jService.readNodesByType(generic_publication);
         assertEquals(2, result1_type_res.size());
         assertTrue(result1_type_pub.isEmpty());
 
@@ -259,14 +259,14 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(publication_1);
 
         /* Read by type */
-        List<Map<String, Object>> result2_type_res = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result2_type_pub = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result2_type_res = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result2_type_pub = neo4jService.readNodesByType(generic_publication);
         assertEquals(3, result2_type_res.size());
         assertEquals(1, result2_type_pub.size());
 
         /* Read by depth 1 */
-        List<Map<String, Object>> result_depth_res = neo4jService.read_nodes_by_depth(generic_researcher, 1);
-        List<Map<String, Object>> result_depth_pub = neo4jService.read_nodes_by_depth(generic_publication, 2);
+        Map<String, DSpaceNode> result_depth_res = neo4jService.readNodesByDepth(generic_researcher.getIDDB(), 1);
+        Map<String, DSpaceNode> result_depth_pub = neo4jService.readNodesByDepth(generic_publication.getIDDB(), 2);
         assertEquals(1, result_depth_res.size());
         assertEquals(3, result_depth_pub.size());
     }
@@ -293,16 +293,16 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(publication_1);
 
         /* Pre-delete */
-        List<Map<String, Object>> result1_type_res1 = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result1_type_pub1 = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result1_type_res1 = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result1_type_pub1 = neo4jService.readNodesByType(generic_publication);
         assertEquals(3, result1_type_res1.size());
         assertEquals(1, result1_type_pub1.size());
 
         neo4jService.deleteGraph();
 
         /* Post-delete */
-        List<Map<String, Object>> result2_type_res1 = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result2_type_pub1 = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result2_type_res1 = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result2_type_pub1 = neo4jService.readNodesByType(generic_publication);
         assertTrue(result2_type_res1.isEmpty());
         assertTrue(result2_type_pub1.isEmpty());
 
@@ -329,24 +329,24 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(publication_1);
 
         /* Pre-delete */
-        List<Map<String, Object>> result1_type_res1 = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result1_type_pub1 = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result1_type_res1 = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result1_type_pub1 = neo4jService.readNodesByType(generic_publication);
         assertEquals(3, result1_type_res1.size());
         assertEquals(1, result1_type_pub1.size());
-        List<Map<String, Object>> result1_depth_res1 = neo4jService.read_nodes_by_depth(generic_researcher, 1);
-        List<Map<String, Object>> result1_depth_pub1 = neo4jService.read_nodes_by_depth(generic_publication, 1);
+        Map<String, DSpaceNode> result1_depth_res1 = neo4jService.readNodesByDepth(generic_researcher.getIDDB(), 1);
+        Map<String, DSpaceNode> result1_depth_pub1 = neo4jService.readNodesByDepth(generic_publication.getIDDB(), 1);
         assertEquals(1, result1_depth_res1.size());
         assertEquals(3, result1_depth_pub1.size());
 
         neo4jService.deleteNodeWithRelationships(generic_researcher);
 
         /* Post-delete */
-        List<Map<String, Object>> result2_type_res1 = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result2_type_pub1 = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result2_type_res1 = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result2_type_pub1 = neo4jService.readNodesByType(generic_publication);
         assertEquals(2, result2_type_res1.size());
         assertEquals(1, result2_type_pub1.size());
-        List<Map<String, Object>> result2_depth_res1 = neo4jService.read_nodes_by_depth(generic_researcher, 1);
-        List<Map<String, Object>> result2_depth_pub1 = neo4jService.read_nodes_by_depth(generic_publication, 1);
+        Map<String, DSpaceNode> result2_depth_res1 = neo4jService.readNodesByDepth(generic_researcher.getIDDB(), 1);
+        Map<String, DSpaceNode> result2_depth_pub1 = neo4jService.readNodesByDepth(generic_publication.getIDDB(), 1);
         assertTrue(result2_depth_res1.isEmpty());
         assertEquals(2, result2_depth_pub1.size());
     }
@@ -372,24 +372,24 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(publication_1);
 
         /* Pre-delete */
-        List<Map<String, Object>> result1_type_res1 = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result1_type_pub1 = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result1_type_res1 = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result1_type_pub1 = neo4jService.readNodesByType(generic_publication);
         assertEquals(3, result1_type_res1.size());
         assertEquals(1, result1_type_pub1.size());
-        List<Map<String, Object>> result1_depth_res1 = neo4jService.read_nodes_by_depth(generic_researcher, 1);
-        List<Map<String, Object>> result1_depth_pub1 = neo4jService.read_nodes_by_depth(generic_publication, 1);
+        Map<String, DSpaceNode> result1_depth_res1 = neo4jService.readNodesByDepth(generic_researcher.getIDDB(), 1);
+        Map<String, DSpaceNode> result1_depth_pub1 = neo4jService.readNodesByDepth(generic_publication.getIDDB(), 1);
         assertEquals(1, result1_depth_res1.size());
         assertEquals(3, result1_depth_pub1.size());
 
         neo4jService.deleteNodeWithRelationships(generic_publication);
 
         /* Post-delete */
-        List<Map<String, Object>> result2_type_res1 = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result2_type_pub1 = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result2_type_res1 = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result2_type_pub1 = neo4jService.readNodesByType(generic_publication);
         assertEquals(3, result2_type_res1.size());
         assertTrue(result2_type_pub1.isEmpty());
-        List<Map<String, Object>> result2_depth_res1 = neo4jService.read_nodes_by_depth(generic_researcher, 1);
-        List<Map<String, Object>> result2_depth_pub1 = neo4jService.read_nodes_by_depth(generic_publication, 1);
+        Map<String, DSpaceNode> result2_depth_res1 = neo4jService.readNodesByDepth(generic_researcher.getIDDB(), 1);
+        Map<String, DSpaceNode> result2_depth_pub1 = neo4jService.readNodesByDepth(generic_publication.getIDDB(), 1);
         assertTrue(result2_depth_res1.isEmpty());
         assertTrue(result2_depth_pub1.isEmpty());
     }
@@ -405,7 +405,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(researcher_1);
 
         /* Pre-edit metadata */
-        Map<String, Object> pre_edit = neo4jService.read_node_by_id(generic_researcher);
+        Map<String, Object> pre_edit = neo4jService.readNodeById(generic_researcher);
         assertEquals(
                 "{properties(node)="
                         + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Smith]}}",
@@ -416,7 +416,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(researcher_1);
 
         /* Post-edit metadata */
-        Map<String, Object> post_edit = neo4jService.read_node_by_id(generic_researcher);
+        Map<String, Object> post_edit = neo4jService.readNodeById(generic_researcher);
         assertEquals(
                 "{properties(node)="
                         + "{IDDB=1, dc_department=[Bocconi, Sapienza], dc_name=[Claire], dc_surname=[Williams]}}",
@@ -435,7 +435,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(researcher_1);
 
         /* Pre-edit metadata */
-        Map<String, Object> pre_edit = neo4jService.read_node_by_id(generic_researcher);
+        Map<String, Object> pre_edit = neo4jService.readNodeById(generic_researcher);
         assertEquals(
                 "{properties(node)="
                         + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Smith]}}",
@@ -447,7 +447,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(researcher_1);
 
         /* Post-edit metadata */
-        Map<String, Object> post_edit1 = neo4jService.read_node_by_id(generic_researcher);
+        Map<String, Object> post_edit1 = neo4jService.readNodeById(generic_researcher);
         assertEquals(
                 "{properties(node)="
                         + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Brown]}}",
@@ -458,7 +458,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         researcher_1.getMetadata().get("dc.department").set(1, "Harvard");
         neo4jService.createUpdateNode(researcher_1);
         /* Post-edit metadata */
-        Map<String, Object> post_edit2 = neo4jService.read_node_by_id(generic_researcher);
+        Map<String, Object> post_edit2 = neo4jService.readNodeById(generic_researcher);
         assertEquals(
                 "{properties(node)="
                         + "{IDDB=1, dc_department=[Oxford University, Harvard], dc_name=[Steve], dc_surname=[Brown]}}",
@@ -487,7 +487,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, list_rel_pub1);
         neo4jService.createUpdateNode(publication_1);
 
-        Map<String, Object> result_properties = neo4jService.read_properties_rel(generic_researcher,
+        Map<String, Object> result_properties = neo4jService.readPropertiesRel(generic_researcher,
                 generic_publication);
         assertEquals("{properties(rel)={rel_date=[13/01/2020], rel_place=[Italy, Usa, Spain]}}",
                 result_properties.toString());
@@ -509,15 +509,15 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         list_rel_pub1.add(single_relation);
         DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, list_rel_pub1);
 
-        List<Map<String, Object>> result1_type_res = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result1_type_pub = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result1_type_res = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result1_type_pub = neo4jService.readNodesByType(generic_publication);
         assertTrue(result1_type_res.isEmpty());
         assertTrue(result1_type_pub.isEmpty());
 
         neo4jService.createUpdateNode(publication_1);
 
-        List<Map<String, Object>> result2_type_res = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result2_type_pub = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result2_type_res = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result2_type_pub = neo4jService.readNodesByType(generic_publication);
         assertEquals(1, result2_type_res.size());
         assertEquals(1, result2_type_pub.size());
 
@@ -526,8 +526,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(researcher_2);
         neo4jService.createUpdateNode(publication_2);
 
-        List<Map<String, Object>> result3_type_res = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result3_type_pub = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result3_type_res = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result3_type_pub = neo4jService.readNodesByType(generic_publication);
         assertEquals(2, result3_type_res.size());
         assertEquals(2, result3_type_pub.size());
 
@@ -548,8 +548,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, list_rel_pub1);
         neo4jService.createUpdateNode(publication_1);
 
-        Map<String, Object> result_id_res1 = neo4jService.read_node_by_id(generic_researcher);
-        Map<String, Object> result_id_pub1 = neo4jService.read_node_by_id(generic_publication);
+        Map<String, Object> result_id_res1 = neo4jService.readNodeById(generic_researcher);
+        Map<String, Object> result_id_pub1 = neo4jService.readNodeById(generic_publication);
         assertEquals(
                 "{properties(node)="
                         + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Smith]}}",
@@ -596,124 +596,124 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode publication_3 = new DSpaceNode("Publication", "103", metadata_pub3, relations_pub3);
         neo4jService.createUpdateNode(publication_3);
 
-        List<Map<String, Object>> result1_type_res = neo4jService.read_nodes_type(generic_researcher);
-        List<Map<String, Object>> result1_type_pub = neo4jService.read_nodes_type(generic_publication);
+        List<Map<String, Object>> result1_type_res = neo4jService.readNodesByType(generic_researcher);
+        List<Map<String, Object>> result1_type_pub = neo4jService.readNodesByType(generic_publication);
         assertEquals(3, result1_type_res.size());
         assertEquals(3, result1_type_pub.size());
 
         /* Read depth = 1 (Start node = researcher_1) */
-        List<Map<String, Object>> result1_depth1_res1 = neo4jService.read_nodes_by_depth(researcher_1, 1);
+        Map<String, DSpaceNode> result1_depth1_res1 = neo4jService.readNodesByDepth(researcher_1.getIDDB(), 1);
         assertEquals(3, result1_depth1_res1.size());
 
         /* Read depth = 2 (Start node = researcher_1) */
-        List<Map<String, Object>> result1_depth2_res1 = neo4jService.read_nodes_by_depth(researcher_1, 2);
+        Map<String, DSpaceNode> result1_depth2_res1 = neo4jService.readNodesByDepth(researcher_1.getIDDB(), 2);
         assertEquals(5, result1_depth2_res1.size());
 
         /* Read depth = 1 (Start node = researcher_2) */
-        List<Map<String, Object>> result1_depth1_res2 = neo4jService.read_nodes_by_depth(researcher_2, 1);
+        Map<String, DSpaceNode> result1_depth1_res2 = neo4jService.readNodesByDepth(researcher_2.getIDDB(), 1);
         assertEquals(1, result1_depth1_res2.size());
 
         /* Read depth = 2 (Start node = researcher_2) */
-        List<Map<String, Object>> result1_depth2_res2 = neo4jService.read_nodes_by_depth(researcher_2, 2);
+        Map<String, DSpaceNode> result1_depth2_res2 = neo4jService.readNodesByDepth(researcher_2.getIDDB(), 2);
         assertEquals(3, result1_depth2_res2.size());
 
         /* Read depth = 3 (Start node = researcher_2) */
-        List<Map<String, Object>> result1_depth3_res2 = neo4jService.read_nodes_by_depth(researcher_2, 3);
+        Map<String, DSpaceNode> result1_depth3_res2 = neo4jService.readNodesByDepth(researcher_2.getIDDB(), 3);
         assertEquals(5, result1_depth3_res2.size());
 
         /* Read depth = 1 (Start node = researcher_3) */
-        List<Map<String, Object>> result1_depth1_res3 = neo4jService.read_nodes_by_depth(researcher_3, 1);
+        Map<String, DSpaceNode> result1_depth1_res3 = neo4jService.readNodesByDepth(researcher_3.getIDDB(), 1);
         assertEquals(3, result1_depth1_res3.size());
 
         /* Read depth = 2 (Start node = researcher_3) */
-        List<Map<String, Object>> result1_depth2_res3 = neo4jService.read_nodes_by_depth(researcher_3, 2);
+        Map<String, DSpaceNode> result1_depth2_res3 = neo4jService.readNodesByDepth(researcher_3.getIDDB(), 2);
         assertEquals(5, result1_depth2_res3.size());
 
         /* Read depth = 1 (Start node = publication_1) */
-        List<Map<String, Object>> result1_depth1_pub1 = neo4jService.read_nodes_by_depth(publication_1, 1);
+        Map<String, DSpaceNode> result1_depth1_pub1 = neo4jService.readNodesByDepth(publication_1.getIDDB(), 1);
         assertEquals(3, result1_depth1_pub1.size());
 
         /* Read depth = 2 (Start node = publication_1) */
-        List<Map<String, Object>> result1_depth2_pub1 = neo4jService.read_nodes_by_depth(publication_1, 2);
+        Map<String, DSpaceNode> result1_depth2_pub1 = neo4jService.readNodesByDepth(publication_1.getIDDB(), 2);
         assertEquals(5, result1_depth2_pub1.size());
 
         /* Read depth = 1 (Start node = publication_2) */
-        List<Map<String, Object>> result1_depth1_pub2 = neo4jService.read_nodes_by_depth(publication_2, 1);
+        Map<String, DSpaceNode> result1_depth1_pub2 = neo4jService.readNodesByDepth(publication_2.getIDDB(), 1);
         assertEquals(2, result1_depth1_pub2.size());
 
         /* Read depth = 2 (Start node = publication_2) */
-        List<Map<String, Object>> result1_depth2_pub2 = neo4jService.read_nodes_by_depth(publication_2, 2);
+        Map<String, DSpaceNode> result1_depth2_pub2 = neo4jService.readNodesByDepth(publication_2.getIDDB(), 2);
         assertEquals(4, result1_depth2_pub2.size());
 
         /* Read depth = 3 (Start node = publication_2) */
-        List<Map<String, Object>> result1_depth3_pub2 = neo4jService.read_nodes_by_depth(publication_2, 3);
+        Map<String, DSpaceNode> result1_depth3_pub2 = neo4jService.readNodesByDepth(publication_2.getIDDB(), 3);
         assertEquals(5, result1_depth3_pub2.size());
 
         /* Read depth = 0 (Start node = publication_3) */
-        List<Map<String, Object>> result1_depth0_pub3 = neo4jService.read_nodes_by_depth(publication_3, 0);
+        Map<String, DSpaceNode> result1_depth0_pub3 = neo4jService.readNodesByDepth(publication_3.getIDDB(), 0);
         assertTrue(result1_depth0_pub3.isEmpty());
 
         /* Read depth = 1 (Start node = publication_3) */
-        List<Map<String, Object>> result1_depth1_pub3 = neo4jService.read_nodes_by_depth(publication_3, 1);
+        Map<String, DSpaceNode> result1_depth1_pub3 = neo4jService.readNodesByDepth(publication_3.getIDDB(), 1);
         assertEquals(2, result1_depth1_pub3.size());
 
         /* Read depth = 2 (Start node = publication_3) */
-        List<Map<String, Object>> result1_depth2_pub3 = neo4jService.read_nodes_by_depth(publication_3, 2);
+        Map<String, DSpaceNode> result1_depth2_pub3 = neo4jService.readNodesByDepth(publication_3.getIDDB(), 2);
         assertEquals(4, result1_depth2_pub3.size());
 
         /* Read depth = 3 (Start node = publication_3) */
-        List<Map<String, Object>> result1_depth3_pub3 = neo4jService.read_nodes_by_depth(publication_3, 3);
+        Map<String, DSpaceNode> result1_depth3_pub3 = neo4jService.readNodesByDepth(publication_3.getIDDB(), 3);
         assertEquals(5, result1_depth3_pub3.size());
 
         /* Read depth = 4 (Start node = publication_3) */
-        List<Map<String, Object>> result1_depth4_pub3 = neo4jService.read_nodes_by_depth(publication_3, 4);
+        Map<String, DSpaceNode> result1_depth4_pub3 = neo4jService.readNodesByDepth(publication_3.getIDDB(), 4);
         assertEquals(5, result1_depth4_pub3.size());
 
         /* Delete a node publication_1 and read again nodes by depth */
         neo4jService.deleteNodeWithRelationships(publication_1);
 
         /* Read depth = 1 (Start node researcher_1) */
-        List<Map<String, Object>> result2_depth1_res1 = neo4jService.read_nodes_by_depth(researcher_1, 1);
+        Map<String, DSpaceNode> result2_depth1_res1 = neo4jService.readNodesByDepth(researcher_1.getIDDB(), 1);
         assertEquals(2, result2_depth1_res1.size());
 
         /* Read depth = 2 (Start node researcher_1 */
-        List<Map<String, Object>> result2_depth2_res1 = neo4jService.read_nodes_by_depth(researcher_1, 2);
+        Map<String, DSpaceNode> result2_depth2_res1 = neo4jService.readNodesByDepth(researcher_1.getIDDB(), 2);
         assertEquals(3, result2_depth2_res1.size());
 
         /* Read depth = 3 (Start node researcher_1 */
-        List<Map<String, Object>> result2_depth3_res1 = neo4jService.read_nodes_by_depth(researcher_1, 3);
+        Map<String, DSpaceNode> result2_depth3_res1 = neo4jService.readNodesByDepth(researcher_1.getIDDB(), 3);
         assertEquals(3, result2_depth3_res1.size());
 
         /* Read depth = 4 (Start node researcher_1 */
-        List<Map<String, Object>> result2_depth4_res1 = neo4jService.read_nodes_by_depth(researcher_1, 4);
+        Map<String, DSpaceNode> result2_depth4_res1 = neo4jService.readNodesByDepth(researcher_1.getIDDB(), 4);
         assertEquals(3, result2_depth4_res1.size());
 
         /* Read depth = 1 (Start node researcher_2) */
-        List<Map<String, Object>> result2_depth1_res2 = neo4jService.read_nodes_by_depth(researcher_2, 1);
+        Map<String, DSpaceNode> result2_depth1_res2 = neo4jService.readNodesByDepth(researcher_2.getIDDB(), 1);
         assertTrue(result2_depth1_res2.isEmpty());
 
         /* Read depth = 1 (Start node researcher_3) */
-        List<Map<String, Object>> result2_depth1_res3 = neo4jService.read_nodes_by_depth(researcher_3, 1);
+        Map<String, DSpaceNode> result2_depth1_res3 = neo4jService.readNodesByDepth(researcher_3.getIDDB(), 1);
         assertEquals(2, result2_depth1_res3.size());
 
         /* Read depth = 2 (Start node researcher_3) */
-        List<Map<String, Object>> result2_depth2_res3 = neo4jService.read_nodes_by_depth(researcher_3, 2);
+        Map<String, DSpaceNode> result2_depth2_res3 = neo4jService.readNodesByDepth(researcher_3.getIDDB(), 2);
         assertEquals(3, result2_depth2_res3.size());
 
         /* Read depth = 1 (Start node publication_2) */
-        List<Map<String, Object>> result2_depth1_pub2 = neo4jService.read_nodes_by_depth(publication_2, 1);
+        Map<String, DSpaceNode> result2_depth1_pub2 = neo4jService.readNodesByDepth(publication_2.getIDDB(), 1);
         assertEquals(2, result2_depth1_pub2.size());
 
         /* Read depth = 2 (Start node publication_2) */
-        List<Map<String, Object>> result2_depth2_pub2 = neo4jService.read_nodes_by_depth(publication_2, 2);
+        Map<String, DSpaceNode> result2_depth2_pub2 = neo4jService.readNodesByDepth(publication_2.getIDDB(), 2);
         assertEquals(3, result2_depth2_pub2.size());
 
         /* Read depth = 1 (Start node publication_3) */
-        List<Map<String, Object>> result2_depth1_pub3 = neo4jService.read_nodes_by_depth(publication_3, 1);
+        Map<String, DSpaceNode> result2_depth1_pub3 = neo4jService.readNodesByDepth(publication_3.getIDDB(), 1);
         assertEquals(2, result2_depth1_pub3.size());
 
         /* Read depth = 2 (Start node publication_3) */
-        List<Map<String, Object>> result2_depth2_pub3 = neo4jService.read_nodes_by_depth(publication_3, 2);
+        Map<String, DSpaceNode> result2_depth2_pub3 = neo4jService.readNodesByDepth(publication_3.getIDDB(), 2);
         assertEquals(3, result2_depth2_pub3.size());
     }
 
@@ -726,12 +726,12 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.deleteGraph();
         DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", null, null);
         neo4jService.createUpdateNode(researcher_1);
-        Map<String, Object> result1_id_res1 = neo4jService.read_node_by_id(generic_researcher);
+        Map<String, Object> result1_id_res1 = neo4jService.readNodeById(generic_researcher);
         assertEquals("{properties(node)={IDDB=1}}", result1_id_res1.toString());
 
         researcher_1.setMetadata(metadata_res1);
         neo4jService.createUpdateNode(researcher_1);
-        Map<String, Object> result2_id_res1 = neo4jService.read_node_by_id(generic_researcher);
+        Map<String, Object> result2_id_res1 = neo4jService.readNodeById(generic_researcher);
         assertEquals(
                 "{properties(node)="
                         + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Smith]}}",
@@ -740,7 +740,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         //TODO:Failed if set metadata to null, don't delete them
         researcher_1.setMetadata(null);
         neo4jService.createUpdateNode(researcher_1);
-        Map<String, Object> result3_id_res1 = neo4jService.read_node_by_id(generic_researcher);
+        Map<String, Object> result3_id_res1 = neo4jService.readNodeById(generic_researcher);
         //assertEquals("{properties(node)={IDDB=1}}", result3_id_res1.toString());
 
     }
