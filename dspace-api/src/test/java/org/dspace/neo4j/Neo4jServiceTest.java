@@ -9,6 +9,8 @@ package org.dspace.neo4j;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -338,7 +340,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         assertEquals(1, result1_depth_res1.size());
         assertEquals(3, result1_depth_pub1.size());
 
-        neo4jService.deleteNodeWithRelationships(generic_researcher);
+        neo4jService.deleteNodeWithRelationships(generic_researcher.getIDDB());
 
         /* Post-delete */
         List<Map<String, Object>> result2_type_res1 = neo4jService.readNodesByType(generic_researcher);
@@ -381,7 +383,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         assertEquals(1, result1_depth_res1.size());
         assertEquals(3, result1_depth_pub1.size());
 
-        neo4jService.deleteNodeWithRelationships(generic_publication);
+        neo4jService.deleteNodeWithRelationships(generic_publication.getIDDB());
 
         /* Post-delete */
         List<Map<String, Object>> result2_type_res1 = neo4jService.readNodesByType(generic_researcher);
@@ -405,23 +407,24 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(researcher_1);
 
         /* Pre-edit metadata */
-        Map<String, Object> pre_edit = neo4jService.readNodeById(generic_researcher);
-        assertEquals(
-                "{properties(node)="
-                        + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Smith]}}",
-                pre_edit.toString());
-        assertEquals(1, pre_edit.size());
+        DSpaceNode pre_edit = neo4jService.readNodeById(generic_researcher.getIDDB());
+        assertNotNull(pre_edit);
+        assertEquals("1", pre_edit.getIDDB());
+        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Smith]}",
+                pre_edit.getMetadata().toString());
+
+        DSpaceNode not_exist = neo4jService.readNodeById(generic_publication.getIDDB());
+        assertNull(not_exist);
 
         researcher_1.setMetadata(metadata_res2);
         neo4jService.createUpdateNode(researcher_1);
 
         /* Post-edit metadata */
-        Map<String, Object> post_edit = neo4jService.readNodeById(generic_researcher);
-        assertEquals(
-                "{properties(node)="
-                        + "{IDDB=1, dc_department=[Bocconi, Sapienza], dc_name=[Claire], dc_surname=[Williams]}}",
-                post_edit.toString());
-        assertEquals(1, post_edit.size());
+        DSpaceNode post_edit = neo4jService.readNodeById(generic_researcher.getIDDB());
+        assertNotNull(post_edit);
+        assertEquals("1", post_edit.getIDDB());
+        assertEquals("{dc_name=[Claire], dc_department=[Bocconi, Sapienza], dc_surname=[Williams]}",
+                post_edit.getMetadata().toString());
     }
 
     /**
@@ -435,35 +438,32 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(researcher_1);
 
         /* Pre-edit metadata */
-        Map<String, Object> pre_edit = neo4jService.readNodeById(generic_researcher);
-        assertEquals(
-                "{properties(node)="
-                        + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Smith]}}",
-                pre_edit.toString());
-        assertEquals(1, pre_edit.size());
+        DSpaceNode pre_edit = neo4jService.readNodeById(generic_researcher.getIDDB());
+        assertNotNull(pre_edit);
+        assertEquals("1", pre_edit.getIDDB());
+        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Smith]}",
+                pre_edit.getMetadata().toString());
 
         /* Change researcher_1 surname */
         researcher_1.getMetadata().get("dc.surname").set(0, "Brown");
         neo4jService.createUpdateNode(researcher_1);
 
         /* Post-edit metadata */
-        Map<String, Object> post_edit1 = neo4jService.readNodeById(generic_researcher);
-        assertEquals(
-                "{properties(node)="
-                        + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Brown]}}",
-                post_edit1.toString());
-        assertEquals(1, post_edit1.size());
+        DSpaceNode post_edit1 = neo4jService.readNodeById(generic_researcher.getIDDB());
+        assertNotNull(post_edit1);
+        assertEquals("1", post_edit1.getIDDB());
+        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Brown]}",
+                post_edit1.getMetadata().toString());
 
         /* Change another metadata researcher_1 department index 1 */
         researcher_1.getMetadata().get("dc.department").set(1, "Harvard");
         neo4jService.createUpdateNode(researcher_1);
         /* Post-edit metadata */
-        Map<String, Object> post_edit2 = neo4jService.readNodeById(generic_researcher);
-        assertEquals(
-                "{properties(node)="
-                        + "{IDDB=1, dc_department=[Oxford University, Harvard], dc_name=[Steve], dc_surname=[Brown]}}",
-                post_edit2.toString());
-        assertEquals(1, post_edit2.size());
+        DSpaceNode post_edit2 = neo4jService.readNodeById(generic_researcher.getIDDB());
+        assertNotNull(post_edit2);
+        assertEquals("1", post_edit2.getIDDB());
+        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Harvard], dc_surname=[Brown]}",
+                post_edit2.getMetadata().toString());
     }
 
     /**
@@ -487,8 +487,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, list_rel_pub1);
         neo4jService.createUpdateNode(publication_1);
 
-        Map<String, Object> result_properties = neo4jService.readPropertiesRel(generic_researcher,
-                generic_publication);
+        Map<String, Object> result_properties = neo4jService.readPropertiesRel(generic_researcher, generic_publication);
         assertEquals("{properties(rel)={rel_date=[13/01/2020], rel_place=[Italy, Usa, Spain]}}",
                 result_properties.toString());
         assertFalse(result_properties.isEmpty());
@@ -548,14 +547,16 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, list_rel_pub1);
         neo4jService.createUpdateNode(publication_1);
 
-        Map<String, Object> result_id_res1 = neo4jService.readNodeById(generic_researcher);
-        Map<String, Object> result_id_pub1 = neo4jService.readNodeById(generic_publication);
-        assertEquals(
-                "{properties(node)="
-                        + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Smith]}}",
-                result_id_res1.toString());
-        assertEquals("{properties(node)=" + "{dc_type=[Magazine], IDDB=101, dc_title=[Web Research]}}",
-                result_id_pub1.toString());
+        DSpaceNode result_id_res1 = neo4jService.readNodeById(generic_researcher.getIDDB());
+        DSpaceNode result_id_pub1 = neo4jService.readNodeById(generic_publication.getIDDB());
+        assertNotNull(result_id_res1);
+        assertNotNull(result_id_pub1);
+        assertEquals("1", result_id_res1.getIDDB());
+        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Smith]}",
+                result_id_res1.getMetadata().toString());
+        assertEquals("101", result_id_pub1.getIDDB());
+        assertEquals("{dc_title=[Web Research], dc_type=[Magazine]}", result_id_pub1.getMetadata().toString());
+
     }
 
     /**
@@ -670,7 +671,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         assertEquals(5, result1_depth4_pub3.size());
 
         /* Delete a node publication_1 and read again nodes by depth */
-        neo4jService.deleteNodeWithRelationships(publication_1);
+        neo4jService.deleteNodeWithRelationships(publication_1.getIDDB());
 
         /* Read depth = 1 (Start node researcher_1) */
         Map<String, DSpaceNode> result2_depth1_res1 = neo4jService.readNodesByDepth(researcher_1.getIDDB(), 1);
@@ -726,22 +727,22 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.deleteGraph();
         DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", null, null);
         neo4jService.createUpdateNode(researcher_1);
-        Map<String, Object> result1_id_res1 = neo4jService.readNodeById(generic_researcher);
-        assertEquals("{properties(node)={IDDB=1}}", result1_id_res1.toString());
+        DSpaceNode result1_id_res1 = neo4jService.readNodeById(generic_researcher.getIDDB());
+        assertEquals("1", result1_id_res1.getIDDB());
+        assertEquals("{}", result1_id_res1.getMetadata().toString());
 
         researcher_1.setMetadata(metadata_res1);
         neo4jService.createUpdateNode(researcher_1);
-        Map<String, Object> result2_id_res1 = neo4jService.readNodeById(generic_researcher);
-        assertEquals(
-                "{properties(node)="
-                        + "{IDDB=1, dc_department=[Oxford University, Roma Tre], dc_name=[Steve], dc_surname=[Smith]}}",
-                result2_id_res1.toString());
+        DSpaceNode result2_id_res1 = neo4jService.readNodeById(generic_researcher.getIDDB());
+        assertEquals("1", result2_id_res1.getIDDB());
+        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Smith]}",
+                result2_id_res1.getMetadata().toString());
 
-        //TODO:Failed if set metadata to null, don't delete them
+        // TODO:Failed if set metadata to null, don't delete them
         researcher_1.setMetadata(null);
         neo4jService.createUpdateNode(researcher_1);
-        Map<String, Object> result3_id_res1 = neo4jService.readNodeById(generic_researcher);
-        //assertEquals("{properties(node)={IDDB=1}}", result3_id_res1.toString());
+        DSpaceNode result3_id_res1 = neo4jService.readNodeById(generic_researcher.getIDDB());
+        //assertEquals("{}", result3_id_res1.getMetadata().toString());
 
     }
 

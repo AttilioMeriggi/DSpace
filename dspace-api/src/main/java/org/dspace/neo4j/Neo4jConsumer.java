@@ -36,33 +36,27 @@ public class Neo4jConsumer implements Consumer {
 
         DSpaceObject object = event.getObject(ctx);
 
-        //DSpaceNode dSpaceNode = neo4jService.convertItem(ctx, event.getObjectID());
-
         int et = event.getEventType();
 
-        // TODO:
         switch (et) {
             case Event.CREATE:
-                //neo4jService.createUpdateNode(dSpaceNode);
-                //neo4jService.insertItem(ctx, event.getObjectID());
             case Event.MODIFY:
-                //neo4jService.createUpdateNode(dSpaceNode);
             case Event.MODIFY_METADATA:
-                //neo4jService.createUpdateNode(dSpaceNode);
                 if (subject == null) {
                     log.warn(event.getEventTypeAsString() + " event, could not get object for "
                             + event.getSubjectTypeAsString() + " id=" + event.getSubjectID()
                             + ", perhaps it has been deleted.");
                 } else {
                     log.debug("consume() adding event to update in neo4j: " + event.toString());
+                    neo4jService.insertUpdateItem(ctx, event.getObjectID());
                 }
                 break;
 
             case Event.DELETE:
-                //neo4jService.deleteNodeWithRelationships(dSpaceNode);
                 if (event.getSubjectType() == -1 || event.getSubjectID() == null) {
                     log.warn("got null subject type and/or ID on DELETE event, skipping it.");
                 } else {
+                    neo4jService.deleteItem(ctx, event.getObjectID());
                     String detail = event.getSubjectType() + "-" + event.getSubjectID().toString();
                     log.debug("consume() adding event to delete queue: " + event.toString());
                 }

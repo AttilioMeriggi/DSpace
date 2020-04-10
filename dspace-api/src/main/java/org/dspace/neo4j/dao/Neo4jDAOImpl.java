@@ -170,17 +170,16 @@ public class Neo4jDAOImpl implements Neo4jDAO {
     }
 
     @Override
-    public void deleteNodeWithRelationships(DSpaceNode dsnode) {
+    public void deleteNodeWithRelationships(String IDDB) {
         AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             StringBuilder query = new StringBuilder();
-            query.append("MATCH (nodo:");
-            query.append(dsnode.getEntityType());
+            query.append("MATCH (nodo");
             query.append("{IDDB:$x}) ");
             query.append("DETACH DELETE nodo");
 
             String final_query = query.toString();
-            session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", dsnode.getIDDB())));
+            session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", IDDB)));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
@@ -248,33 +247,48 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @return node map with all properties or EmptyMap
      */
     @Override
-    public Map<String, Object> readNodeById(DSpaceNode dsnode) {
+    public DSpaceNode readNodeById(String IDDB) {
         AuthenticationDriver auth_driver = getAuthDriver();
-        String entity_type = dsnode.getEntityType();
-        Map<String, Object> properties_map = new HashMap<String, Object>();
+        DSpaceNode readNode = null;
+        Map<String, Object> record_map = new HashMap<String, Object>();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
 
             StringBuilder query = new StringBuilder();
-            query.append("MATCH (node:");
-            query.append(entity_type);
+            query.append("MATCH (node");
             query.append("{IDDB:$x}) ");
             query.append("RETURN properties(node)");
             String final_query = query.toString();
 
-            Result result = session.run(final_query, Values.parameters("x", dsnode.getIDDB()));
+            Result result = session.run(final_query, Values.parameters("x", IDDB));
             for (Record record : result.list()) {
-                properties_map = record.asMap();
-            }
-
-            if (properties_map.isEmpty()) {
-                return Collections.emptyMap();
+                String ID = "";
+                Map<String, List<String>> currMetadata = new HashMap<String, List<String>>();
+                readNode = new DSpaceNode(ID, currMetadata);
+                record_map = record.asMap();
+                for (String s : record_map.keySet()) {
+                    Map<String, Object> o = (Map<String, Object>) record_map.get(s);
+                    for (String s2 : o.keySet()) {
+                        switch (o.get(s2).getClass().toString()) {
+                            case "class java.lang.String":
+                                ID = (String) o.get(s2);
+                                break;
+                            case "class java.util.Collections$UnmodifiableRandomAccessList":
+                            case "class java.util.Collections$SingletonList":
+                                List<String> properties = (List<String>) o.get(s2);
+                                currMetadata.put(s2, properties);
+                                break;
+                            default:
+                        }
+                        readNode.setIDDB(ID);
+                        readNode.setMetadata(currMetadata);
+                    }
+                }
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
         }
-
-        return properties_map;
+        return readNode;
     }
 
     /**

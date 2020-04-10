@@ -21,11 +21,13 @@ public interface Neo4jService {
 
     public void insertUpdateItem(Context context, UUID id);
 
+    public void deleteItem(Context context, UUID id);
+
     /* Service Neo4j for creating or updating nodes with their relationships */
     public void createUpdateNode(DSpaceNode dsnode);
 
     /* Service Neo4j for deleating nodes with their relationships */
-    public void deleteNodeWithRelationships(DSpaceNode dsnode);
+    public void deleteNodeWithRelationships(String IDDB);
 
     /* Service Neo4j for delete all graph */
     public void deleteGraph();
@@ -34,7 +36,7 @@ public interface Neo4jService {
     public List<Map<String, Object>> readNodesByType(DSpaceNode dsnode);
 
     /* Service Neo4j for reading node of a specific IDDB */
-    public Map<String, Object> readNodeById(DSpaceNode dsnode);
+    public DSpaceNode readNodeById(String IDDB);
 
     /* Service to read relationship properties between two nodes */
     public Map<String, Object> readPropertiesRel(DSpaceNode dsnode1, DSpaceNode dsnode2);

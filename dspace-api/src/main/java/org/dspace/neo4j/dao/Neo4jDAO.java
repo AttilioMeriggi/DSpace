@@ -19,7 +19,7 @@ public interface Neo4jDAO {
     public void createUpdateNode(DSpaceNode dsnode);
 
     /* Method for deleating nodes with their relationships */
-    public void deleteNodeWithRelationships(DSpaceNode dsnode);
+    public void deleteNodeWithRelationships(String IDDB);
 
     /* Method for delete all graph */
     public void deleteGraph();
@@ -28,7 +28,7 @@ public interface Neo4jDAO {
     public List<Map<String, Object>> readNodesByType(DSpaceNode dsnode);
 
     /* Method for reading node of a specific IDDB */
-    public Map<String, Object> readNodeById(DSpaceNode dsnode);
+    public DSpaceNode readNodeById(String IDDB);
 
     /* Method for read relationship properties between two nodes */
     public Map<String, Object> readPropertiesRel(DSpaceNode dsnode1, DSpaceNode dsnode2);

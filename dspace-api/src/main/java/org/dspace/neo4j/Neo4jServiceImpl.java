@@ -99,13 +99,22 @@ public class Neo4jServiceImpl implements Neo4jService {
     }
 
     @Override
+    public void deleteItem(Context context, UUID id) {
+        try {
+            neo4jDAO.deleteNodeWithRelationships(id.toString());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void createUpdateNode(DSpaceNode dsnode) {
         neo4jDAO.createUpdateNode(dsnode);
     }
 
     @Override
-    public void deleteNodeWithRelationships(DSpaceNode dsnode) {
-        neo4jDAO.deleteNodeWithRelationships(dsnode);
+    public void deleteNodeWithRelationships(String IDDB) {
+        neo4jDAO.deleteNodeWithRelationships(IDDB);
     }
 
     @Override
@@ -119,8 +128,8 @@ public class Neo4jServiceImpl implements Neo4jService {
     }
 
     @Override
-    public Map<String, Object> readNodeById(DSpaceNode dsnode) {
-        return neo4jDAO.readNodeById(dsnode);
+    public DSpaceNode readNodeById(String IDDB) {
+        return neo4jDAO.readNodeById(IDDB);
     }
 
     @Override
