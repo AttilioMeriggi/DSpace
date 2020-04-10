@@ -1,11 +1,18 @@
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
 package org.dspace.neo4j;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,7 +22,6 @@ import org.dspace.content.Collection;
 import org.dspace.content.Community;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataSchemaEnum;
-import org.dspace.content.MetadataValue;
 import org.dspace.content.WorkspaceItem;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.CollectionService;
@@ -39,9 +45,19 @@ public class ConvertItemTest extends AbstractNeo4jTest {
     private WorkspaceItemService workspaceItemService = ContentServiceFactory.getInstance().getWorkspaceItemService();
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
     private Neo4jService neo4jService = Neo4jFactory.getInstance().getNeo4jService();
+    private AuthenticationDriver authDriver = null;
 
     @Before
-    public void setUp() throws Exception {
+    @Override
+    public void init() {
+        try {
+            super.init();
+
+            authDriver = new AuthenticationDriver(neo4j.boltURI().toString(), null, null);
+            neo4jService.setAuthDriver(authDriver);
+        } catch (Exception ex) {
+            log.error("Error during test initialization", ex);
+        }
     }
 
     @Test
@@ -74,7 +90,9 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             Item itemPerson = wiPerson.getItem();
             itemService.setMetadataSingleValue(context, itemPerson, MetadataSchemaEnum.DC.getName(), "title", null,
                     null, "Attilio Meriggi");
-            itemService.setMetadataSingleValue(context, itemPerson, "crisprp", "email", null, null, "attili@sample.ue");
+            // itemService.setMetadataSingleValue(context, itemPerson, "crisprp", "email",
+            // null, null,
+            // "attilio@sample.ue");
             itemService.setMetadataSingleValue(context, itemPerson, "relationship", "type", null, null, "person");
             itemService.update(context, itemPerson);
 
@@ -90,13 +108,39 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             itemService.update(context, itemPerson);
 
             // Perform test convertItem
-            neo4jService.insertUpdateItem(context, itemPerson.getID());
+            // Insert publication item and consequently also insert the related item person
+            // automatically
             neo4jService.insertUpdateItem(context, itemPublication.getID());
 
-            //List<MetadataValue> metadata = item.getMetadata();
-            // assertEquals(converted_item.getEntityType(), item.getType().toString());
-            //assertEquals(converted_item.getIDDB(), id.toString());
-            //assertEquals(converted_item.getMetadata().get("dc.name").get(0), metadata.get(0).getValue());
+            DSpaceNode itemPersonNode = neo4jService.readNodeById(itemPerson.getID().toString());
+            assertEquals(itemPerson.getID().toString(), itemPersonNode.getIDDB());
+            assertEquals("[Attilio Meriggi]", itemPersonNode.getMetadata().toString());
+            // assertEquals("[attilio@sample.ue]",
+            // itemPersonNode.getMetadata().get("crisprp_email"));
+            // assertEquals("[person]",
+            // itemPersonNode.getMetadata().get("relationship_type"));
+
+            DSpaceNode itemPublicationNode = neo4jService.readNodeById(itemPublication.getID().toString());
+            assertEquals(itemPublication.getID().toString(), itemPublicationNode.getIDDB());
+            // assertEquals("[Sample article]",
+            // itemPublicationNode.getMetadata().get("dc_title"));
+            // assertEquals("[Attilio Meriggi]",
+            // itemPublicationNode.getMetadata().get("dc_contributor_author"));
+            // assertEquals("Publication",
+            // itemPublicationNode.getMetadata().get("relationship_type"));
+
+            neo4jService.deleteItem(context, itemPublication.getID());
+
+            DSpaceNode itemPublicationNodeAfterDeletePublication = neo4jService
+                    .readNodeById(itemPublication.getID().toString());
+            assertNull(itemPublicationNodeAfterDeletePublication);
+
+            DSpaceNode itemPersonNodeAfterDeletePublication = neo4jService.readNodeById(itemPerson.getID().toString());
+            assertNotNull(itemPersonNodeAfterDeletePublication);
+
+            neo4jService.deleteItem(context, itemPerson.getID());
+            DSpaceNode itemPersonNodeAfterDeletePerson = neo4jService.readNodeById(itemPerson.getID().toString());
+            assertNull(itemPersonNodeAfterDeletePerson);
 
             context.restoreAuthSystemState();
 

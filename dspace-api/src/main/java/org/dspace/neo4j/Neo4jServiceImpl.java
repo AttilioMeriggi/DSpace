@@ -45,7 +45,7 @@ public class Neo4jServiceImpl implements Neo4jService {
                 entityType = value.getValue();
             }
             dsnode = new DSpaceNode(entityType, item.getID().toString());
-            neo4jDAO.createUpdateNode(dsnode);
+            this.createUpdateNode(dsnode);
         } catch (Exception e) {
             log.error("Error creating empty item", e);
 
@@ -92,7 +92,7 @@ public class Neo4jServiceImpl implements Neo4jService {
                 }
                 metadataNode.get(key).add(m.getValue());
             }
-            neo4jDAO.createUpdateNode(new DSpaceNode(entityType, id.toString(), metadataNode, relations));
+            this.createUpdateNode(new DSpaceNode(entityType, id.toString(), metadataNode, relations));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
