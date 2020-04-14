@@ -7,13 +7,13 @@
  */
 package org.dspace.neo4j.service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.dspace.core.Context;
 import org.dspace.neo4j.AuthenticationDriver;
 import org.dspace.neo4j.DSpaceNode;
+import org.dspace.neo4j.DSpaceRelation;
 
 public interface Neo4jService {
 
@@ -33,13 +33,13 @@ public interface Neo4jService {
     public void deleteGraph();
 
     /* Service Neo4j for reading the nodes of a specific label */
-    public List<Map<String, Object>> readNodesByType(DSpaceNode dsnode);
+    public Map<String, DSpaceNode> readNodesByType(String entityType);
 
     /* Service Neo4j for reading node of a specific IDDB */
     public DSpaceNode readNodeById(String IDDB);
 
     /* Service to read relationship properties between two nodes */
-    public Map<String, Object> readPropertiesRel(DSpaceNode dsnode1, DSpaceNode dsnode2);
+    public DSpaceRelation readPropertiesRel(String IDDB1, String IDDB2);
 
     /* Service Neo4j for reading all nodes at a certain depth from that specified */
     public Map<String, DSpaceNode> readNodesByDepth(String IDDB, int depth);

@@ -123,8 +123,8 @@ public class Neo4jServiceImpl implements Neo4jService {
     }
 
     @Override
-    public List<Map<String, Object>> readNodesByType(DSpaceNode dsnode) {
-        return neo4jDAO.readNodesByType(dsnode);
+    public Map<String, DSpaceNode> readNodesByType(String entityType) {
+        return neo4jDAO.readNodesByType(entityType);
     }
 
     @Override
@@ -133,8 +133,8 @@ public class Neo4jServiceImpl implements Neo4jService {
     }
 
     @Override
-    public Map<String, Object> readPropertiesRel(DSpaceNode dsnode1, DSpaceNode dsnode2) {
-        return neo4jDAO.readPropertiesRel(dsnode1, dsnode2);
+    public DSpaceRelation readPropertiesRel(String IDDB1, String IDDB2) {
+        return neo4jDAO.readPropertiesRel(IDDB1, IDDB2);
     }
 
     @Override

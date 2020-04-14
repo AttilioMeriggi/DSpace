@@ -14,6 +14,10 @@ public class DSpaceRelation {
     String type;
     Map<String, List<String>> metadata;
     DSpaceNode target;
+    
+    public DSpaceRelation(Map<String, List<String>> metadata) {
+        this.metadata = metadata;
+    }
 
     public DSpaceRelation(String type, DSpaceNode target, Map<String, List<String>> metadata) {
         this.type = type;

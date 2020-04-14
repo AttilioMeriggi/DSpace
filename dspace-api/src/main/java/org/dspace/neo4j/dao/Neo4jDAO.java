@@ -7,11 +7,11 @@
  */
 package org.dspace.neo4j.dao;
 
-import java.util.List;
 import java.util.Map;
 
 import org.dspace.neo4j.AuthenticationDriver;
 import org.dspace.neo4j.DSpaceNode;
+import org.dspace.neo4j.DSpaceRelation;
 
 public interface Neo4jDAO {
 
@@ -25,13 +25,13 @@ public interface Neo4jDAO {
     public void deleteGraph();
 
     /* Method for reading the nodes of a specific label */
-    public List<Map<String, Object>> readNodesByType(DSpaceNode dsnode);
+    public Map<String, DSpaceNode> readNodesByType(String entityType);
 
     /* Method for reading node of a specific IDDB */
     public DSpaceNode readNodeById(String IDDB);
 
     /* Method for read relationship properties between two nodes */
-    public Map<String, Object> readPropertiesRel(DSpaceNode dsnode1, DSpaceNode dsnode2);
+    public DSpaceRelation readPropertiesRel(String IDDB1, String IDDB2);
 
     /* Method for reading all nodes at a certain depth from that specified */
     public Map<String, DSpaceNode> readNodesByDepth(String IDDB, int depth);

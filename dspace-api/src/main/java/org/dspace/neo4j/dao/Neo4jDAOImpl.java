@@ -7,7 +7,6 @@
  */
 package org.dspace.neo4j.dao;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -208,16 +207,15 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @return list maps properties nodes or EmptyList
      */
     @Override
-    public List<Map<String, Object>> readNodesByType(DSpaceNode dsnode) {
+    public Map<String, DSpaceNode> readNodesByType(String entityType) {
         AuthenticationDriver auth_driver = getAuthDriver();
-        String entity_type = dsnode.getEntityType();
-        List<Map<String, Object>> list_results_maps = new ArrayList<Map<String, Object>>();
-        Map<String, Object> results = new HashMap<String, Object>();
+        Map<String, DSpaceNode> final_map = new HashMap<String, DSpaceNode>();
+        Map<String, Object> record_map = new HashMap<String, Object>();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
 
             StringBuilder query = new StringBuilder();
             query.append("MATCH (node1:");
-            query.append(entity_type);
+            query.append(entityType);
             query.append(") ");
             query.append("RETURN properties(node1)");
 
@@ -225,19 +223,41 @@ public class Neo4jDAOImpl implements Neo4jDAO {
             Result result = session.run(final_query);
 
             for (Record record : result.list()) {
-                results = record.asMap();
-                list_results_maps.add(results);
+                String ID = "";
+                Map<String, List<String>> currMetadata = new HashMap<String, List<String>>();
+                DSpaceNode currNode = new DSpaceNode(ID, currMetadata);
+                record_map = record.asMap();
+                for (String s : record_map.keySet()) {
+                    Map<String, Object> o = (Map<String, Object>) record_map.get(s);
+                    for (String s2 : o.keySet()) {
+                        switch (o.get(s2).getClass().toString()) {
+                            case "class java.lang.String":
+                                ID = (String) o.get(s2);
+                                break;
+                            case "class java.util.Collections$UnmodifiableRandomAccessList":
+                            case "class java.util.Collections$SingletonList":
+                                List<String> properties = (List<String>) o.get(s2);
+                                currMetadata.put(s2, properties);
+                                break;
+                            default:
+                        }
+                        currNode.setEntityType(entityType);
+                        currNode.setIDDB(ID);
+                        currNode.setMetadata(currMetadata);
+                    }
+                }
+                final_map.put(currNode.getIDDB(), currNode);
             }
 
-            if (list_results_maps.size() == 0) {
-                return Collections.emptyList();
+            if (final_map.isEmpty()) {
+                return Collections.emptyMap();
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
         }
 
-        return list_results_maps;
+        return final_map;
     }
 
     /**
@@ -296,27 +316,43 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * 
      */
     @Override
-    public Map<String, Object> readPropertiesRel(DSpaceNode dsnode1, DSpaceNode dsnode2) {
+    public DSpaceRelation readPropertiesRel(String IDDB1, String IDDB2) {
         AuthenticationDriver auth_driver = getAuthDriver();
-        Map<String, Object> properties_map = new HashMap<String, Object>();
+        DSpaceRelation final_rel = null;
+        Map<String, Object> record_map = new HashMap<String, Object>();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             StringBuilder query = new StringBuilder();
-            query.append("MATCH (node1:");
-            query.append(dsnode1.getEntityType());
-            query.append("{IDDB:$x})-[rel]-(node2:");
-            query.append(dsnode2.getEntityType());
-            query.append("{IDDB:$y}) ");
+            query.append("MATCH (node1");
+            query.append("{IDDB:$x})-[rel]-(node2{IDDB:$y}) ");
             query.append("RETURN properties(rel)");
             String final_query = query.toString();
-            Result result = session.run(final_query, Values.parameters("x", dsnode1.getIDDB(), "y", dsnode2.getIDDB()));
+            Result result = session.run(final_query, Values.parameters("x", IDDB1, "y", IDDB2));
             for (Record record : result.list()) {
-                properties_map = record.asMap();
+                Map<String, List<String>> currMetadata = new HashMap<String, List<String>>();
+                final_rel = new DSpaceRelation(currMetadata);
+                record_map = record.asMap();
+                for (String s : record_map.keySet()) {
+                    Map<String, Object> o = (Map<String, Object>) record_map.get(s);
+                    for (String s2 : o.keySet()) {
+                        switch (o.get(s2).getClass().toString()) {
+                            case "class java.lang.String":
+                                break;
+                            case "class java.util.Collections$UnmodifiableRandomAccessList":
+                            case "class java.util.Collections$SingletonList":
+                                List<String> properties = (List<String>) o.get(s2);
+                                currMetadata.put(s2, properties);
+                                break;
+                            default:
+                        }
+                        final_rel.setMetadata(currMetadata);
+                    }
+                }
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
         }
-        return properties_map;
+        return final_rel;
     }
 
     /**
