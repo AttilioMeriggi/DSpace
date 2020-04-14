@@ -92,7 +92,8 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             Item itemPerson = wiPerson.getItem();
             itemService.setMetadataSingleValue(context, itemPerson, MetadataSchemaEnum.DC.getName(), "title", null,
                     null, "Attilio Meriggi");
-            //itemService.setMetadataSingleValue(context, itemPerson, "crisrp", "email", null, null, "attilio@sample.ue");
+            // itemService.setMetadataSingleValue(context, itemPerson, "crisrp", "email",
+            // null, null, "attilio@sample.ue");
             itemService.setMetadataSingleValue(context, itemPerson, "relationship", "type", null, null, "person");
             itemService.update(context, itemPerson);
 
@@ -114,7 +115,8 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             DSpaceNode sampleNodePerson = new DSpaceNode("person");
             DSpaceNode sampleNodePublication = new DSpaceNode("publication");
             Map<String, DSpaceNode> numbPerson = neo4jService.readNodesByType(sampleNodePerson.getEntityType());
-            Map<String, DSpaceNode> numbPublication = neo4jService.readNodesByType(sampleNodePublication.getEntityType());
+            Map<String, DSpaceNode> numbPublication = neo4jService
+                    .readNodesByType(sampleNodePublication.getEntityType());
             assertEquals(1, numbPerson.size());
             assertEquals(1, numbPublication.size());
 
@@ -125,12 +127,10 @@ public class ConvertItemTest extends AbstractNeo4jTest {
 
             DSpaceNode itemPublicationNode = neo4jService.readNodeById(itemPublication.getID().toString());
             assertEquals(itemPublication.getID().toString(), itemPublicationNode.getIDDB());
-            assertEquals("[Sample article]",
-                    itemPublicationNode.getMetadata().get("dc_title").toString());
+            assertEquals("[Sample article]", itemPublicationNode.getMetadata().get("dc_title").toString());
             assertEquals("[Attilio Meriggi]",
                     itemPublicationNode.getMetadata().get("dc_contributor_author").toString());
-            assertEquals("[publication]",
-                    itemPublicationNode.getMetadata().get("relationship_type").toString());
+            assertEquals("[publication]", itemPublicationNode.getMetadata().get("relationship_type").toString());
 
             neo4jService.deleteItem(context, itemPublication.getID());
 
@@ -144,13 +144,15 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             neo4jService.deleteItem(context, itemPerson.getID());
             DSpaceNode itemPersonNodeAfterDeletePerson = neo4jService.readNodeById(itemPerson.getID().toString());
             assertNull(itemPersonNodeAfterDeletePerson);
-            
-            Map<String, DSpaceNode> numbPersonAfterDelete = neo4jService.readNodesByType(sampleNodePerson.getEntityType());
+
+            Map<String, DSpaceNode> numbPersonAfterDelete = neo4jService
+                    .readNodesByType(sampleNodePerson.getEntityType());
             assertTrue(numbPersonAfterDelete.isEmpty());
-            
-            Map<String, DSpaceNode> numbPublicationAfterDelete = neo4jService.readNodesByType(sampleNodePublication.getEntityType());
+
+            Map<String, DSpaceNode> numbPublicationAfterDelete = neo4jService
+                    .readNodesByType(sampleNodePublication.getEntityType());
             assertTrue(numbPublicationAfterDelete.isEmpty());
-            
+
             context.restoreAuthSystemState();
 
         } catch (SQLException | AuthorizeException ex) {

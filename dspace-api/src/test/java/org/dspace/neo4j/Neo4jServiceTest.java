@@ -190,8 +190,10 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, list_rel_res1);
         neo4jService.createUpdateNode(researcher_1);
 
-        Map<String, DSpaceNode> result_type_researcher = neo4jService.readNodesByType(generic_researcher.getEntityType());
-        Map<String, DSpaceNode> result_type_publication = neo4jService.readNodesByType(generic_publication.getEntityType());
+        Map<String, DSpaceNode> result_type_researcher = neo4jService
+                .readNodesByType(generic_researcher.getEntityType());
+        Map<String, DSpaceNode> result_type_publication = neo4jService
+                .readNodesByType(generic_publication.getEntityType());
         assertEquals(1, result_type_researcher.size());
         assertEquals(1, result_type_publication.size());
     }
@@ -486,7 +488,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, list_rel_pub1);
         neo4jService.createUpdateNode(publication_1);
 
-        DSpaceRelation result_properties = neo4jService.readPropertiesRel(generic_researcher.getIDDB(), generic_publication.getIDDB());
+        DSpaceRelation result_properties = neo4jService.readPropertiesRel(generic_researcher.getIDDB(),
+                generic_publication.getIDDB());
         assertEquals("{rel_date=[13/01/2020], rel_place=[Italy, Usa, Spain]}",
                 result_properties.getMetadata().toString());
     }
@@ -739,7 +742,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         researcher_1.setMetadata(null);
         neo4jService.createUpdateNode(researcher_1);
         DSpaceNode result3_id_res1 = neo4jService.readNodeById(generic_researcher.getIDDB());
-        //assertEquals("{}", result3_id_res1.getMetadata().toString());
+        // assertEquals("{}", result3_id_res1.getMetadata().toString());
     }
 
 }

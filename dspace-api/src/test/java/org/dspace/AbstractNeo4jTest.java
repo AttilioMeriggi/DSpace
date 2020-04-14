@@ -1,11 +1,16 @@
 package org.dspace;
 
-import org.flywaydb.core.Flyway;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
 
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
 public class AbstractNeo4jTest extends AbstractUnitTest {
 
     protected static Neo4j neo4j;
