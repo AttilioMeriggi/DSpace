@@ -342,6 +342,44 @@
                     <artifactId>asm-commons</artifactId>
                 </exclusion>
                 <!-- neo4j has a more recent version [END]-->
+                <!-- remove all Websocket libraries [START] -->
+                <exclusion>
+                    <groupId>org.eclipse.jetty.websocket</groupId>
+                    <artifactId>websocket-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.websocket</groupId>
+                    <artifactId>websocket-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.websocket</groupId>
+                    <artifactId>websocket-servlet</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.websocket</groupId>
+                    <artifactId>websocket-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.websocket</groupId>
+                    <artifactId>websocket-server</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.websocket</groupId>
+                    <artifactId>javax.websocket-client-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.websocket</groupId>
+                    <artifactId>javax.websocket-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.websocket</groupId>
+                    <artifactId>javax-websocket-client-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.websocket</groupId>
+                    <artifactId>javax-websocket-server-impl</artifactId>
+                </exclusion>
+                <!-- remove all Websocket libraries [END] -->
             </exclusions>
         </dependency>
         <dependency>
@@ -753,6 +791,12 @@
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j</artifactId>
             <version>4.0.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-nop</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- neo4j 4.0.3 is recompiled with jetty.version 9.4.19.v20190610 -->
@@ -785,6 +829,35 @@
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-commons</artifactId>
             <version>7.2</version>
+        </dependency>
+
+        <!-- BUG: https://github.com/jtwig/jtwig/issues/367
+            Error: org.springframework.beans.factory.BeanCreationException:
+            Error creating bean with name 'jtwigViewResolver' defined in class path
+            resource [org/jtwig/spring/boot/JtwigAutoConfiguration$JtwigViewResolverConfiguration.class]:
+            Invocation of init method failed; nested exception is java.lang.NoClassDefFoundError:
+            org/parboiled/BaseParser
+
+            @See also neo4j dependencies.
+        -->
+        <dependency>
+            <groupId>org.parboiled</groupId>
+            <artifactId>parboiled-java</artifactId>
+            <version>1.2.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.ow2.asm</groupId>
+                    <artifactId>asm-tree</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.asm</groupId>
+                    <artifactId>asm-util</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.asm</groupId>
+                    <artifactId>asm-analysis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
