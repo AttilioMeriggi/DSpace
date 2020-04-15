@@ -36,6 +36,16 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             String entity_type = dsnode.getEntityType();
+            
+            {
+                StringBuilder query = new StringBuilder();
+                query.append("MATCH (nodo:");
+                query.append(entity_type);
+                query.append("{IDDB:$x}) ");
+                query.append("SET nodo = {}");
+                String final_query = query.toString();
+                session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", dsnode.getIDDB())));
+            }
 
             /* Node creation without relationships */
             {

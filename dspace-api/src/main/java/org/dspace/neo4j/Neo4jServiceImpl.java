@@ -110,7 +110,7 @@ public class Neo4jServiceImpl implements Neo4jService {
     @Override
     public void deleteItem(Context context, UUID id) {
         try {
-            neo4jDAO.deleteNodeWithRelationships(id.toString());
+            this.deleteNodeWithRelationships(id.toString());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
