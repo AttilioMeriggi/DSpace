@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class Neo4jServiceImpl implements Neo4jService {
 
     private static final Logger log = LogManager.getLogger(Neo4jServiceImpl.class);
+    private static final String DEFAULT_ENTITY_TYPE = "person";
 
     @Autowired(required = true)
     private Neo4jDAO neo4jDAO;
@@ -41,8 +42,12 @@ public class Neo4jServiceImpl implements Neo4jService {
             List<MetadataValue> values = itemService.getMetadata(item, "relationship", "type", null, null);
 
             String entityType = "";
-            for (MetadataValue value : values) {
-                entityType = value.getValue();
+            if (values == null || values.size() <= 0) {
+                entityType = DEFAULT_ENTITY_TYPE;
+            } else {
+                for (MetadataValue value : values) {
+                    entityType = value.getValue();
+                }
             }
             dsnode = new DSpaceNode(entityType, item.getID().toString());
             this.createUpdateNode(dsnode);
@@ -81,8 +86,12 @@ public class Neo4jServiceImpl implements Neo4jService {
             List<MetadataValue> values = itemService.getMetadata(item, "relationship", "type", null, null);
 
             String entityType = "";
-            for (MetadataValue value : values) {
-                entityType = value.getValue();
+            if (values == null || values.size() <= 0) {
+                entityType = DEFAULT_ENTITY_TYPE;
+            } else {
+                for (MetadataValue value : values) {
+                    entityType = value.getValue();
+                }
             }
             Map<String, List<String>> metadataNode = new HashMap<String, List<String>>();
             for (MetadataValue m : metadataItem) {
