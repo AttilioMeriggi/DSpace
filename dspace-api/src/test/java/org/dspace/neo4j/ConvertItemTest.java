@@ -67,6 +67,8 @@ public class ConvertItemTest extends AbstractNeo4jTest {
         try {
             context.turnOffAuthorisationSystem();
 
+            neo4jService.deleteGraph();
+
             // use ePerson as submitter
             EPerson eperson = ePersonService.create(context);
             eperson.setEmail("attilio@sample.ue");
@@ -120,6 +122,13 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             assertEquals(1, numbPerson.size());
             assertEquals(1, numbPublication.size());
 
+            // TODO: error: relationship not created
+            DSpaceRelation resultRelation = neo4jService.readPropertiesRel(itemPerson.getID().toString(),
+                    itemPublication.getID().toString());
+            // assertNotNull(resultRelation);
+            Map<String, DSpaceNode> result_by_depth = neo4jService.readNodesByDepth(itemPerson.getID().toString(), 1);
+            //assertEquals(1, result_by_depth.size());
+
             DSpaceNode itemPersonNode = neo4jService.readNodeById(itemPerson.getID().toString());
             assertEquals(itemPerson.getID().toString(), itemPersonNode.getIDDB());
             assertEquals("[Attilio Meriggi]", itemPersonNode.getMetadata().get("dc_title").toString());
@@ -161,4 +170,107 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             context.restoreAuthSystemState();
         }
     }
+
+    /**
+     * Assign the default type to an item
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void createItemWithoutMetadataType() throws IOException {
+        try {
+            context.turnOffAuthorisationSystem();
+
+            neo4jService.deleteGraph();
+
+            // use ePerson as submitter
+            EPerson eperson = ePersonService.create(context);
+            eperson.setEmail("attilio@sample.ue");
+            eperson.setFirstName(context, "Attilio");
+            eperson.setLastName(context, "Meriggi");
+            ePersonService.setPassword(eperson, "test");
+            ePersonService.update(context, eperson);
+            context.setCurrentUser(eperson);
+
+            // create the community and a collection
+            Community owningCommunity = communityService.create(null, context);
+            communityService.setMetadataSingleValue(context, owningCommunity, MetadataSchemaEnum.DC.getName(), "title",
+                    null, null, "Main Community");
+            communityService.update(context, owningCommunity);
+
+            Collection collection = collectionService.create(context, owningCommunity);
+            collectionService.setMetadataSingleValue(context, collection, MetadataSchemaEnum.DC.getName(), "title",
+                    null, null, "My Collection");
+            collectionService.update(context, collection);
+
+            // create an ItemPerson
+            WorkspaceItem wi = workspaceItemService.create(context, collection, false);
+            Item itemWithoutType = wi.getItem();
+            itemService.setMetadataSingleValue(context, itemWithoutType, MetadataSchemaEnum.DC.getName(), "title", null,
+                    null, "Attilio Meriggi");
+            itemService.update(context, itemWithoutType);
+
+            /* "person" is default type */
+            DSpaceNode sampleNodePerson = new DSpaceNode("person");
+            Map<String, DSpaceNode> personTypeBeforeInsert = neo4jService
+                    .readNodesByType(sampleNodePerson.getEntityType());
+            assertTrue(personTypeBeforeInsert.isEmpty());
+
+            // Perform test
+            neo4jService.insertUpdateItem(context, itemWithoutType.getID());
+
+            Map<String, DSpaceNode> personTypeAfterInsert = neo4jService
+                    .readNodesByType(sampleNodePerson.getEntityType());
+            assertEquals(1, personTypeAfterInsert.size());
+
+            context.restoreAuthSystemState();
+
+        } catch (SQLException | AuthorizeException ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            context.restoreAuthSystemState();
+        }
+    }
+
+    /**
+     * 
+     * Create Items without relationship between them
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void createItemsWithoutRelationship() throws IOException {
+        try {
+            context.turnOffAuthorisationSystem();
+            // use ePerson as submitter
+            EPerson eperson = ePersonService.create(context);
+            eperson.setEmail("attilio@sample.ue");
+            eperson.setFirstName(context, "Attilio");
+            eperson.setLastName(context, "Meriggi");
+            ePersonService.setPassword(eperson, "test");
+            ePersonService.update(context, eperson);
+            context.setCurrentUser(eperson);
+
+            // create the community and a collection
+            Community owningCommunity = communityService.create(null, context);
+            communityService.setMetadataSingleValue(context, owningCommunity, MetadataSchemaEnum.DC.getName(), "title",
+                    null, null, "Main Community");
+            communityService.update(context, owningCommunity);
+
+            Collection collection = collectionService.create(context, owningCommunity);
+            collectionService.setMetadataSingleValue(context, collection, MetadataSchemaEnum.DC.getName(), "title",
+                    null, null, "My Collection");
+            collectionService.update(context, collection);
+
+            // TODO: perform test
+
+            context.restoreAuthSystemState();
+
+        } catch (SQLException | AuthorizeException ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            context.restoreAuthSystemState();
+        }
+    }
+
 }

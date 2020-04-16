@@ -716,6 +716,12 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         /* Read depth = 2 (Start node publication_3) */
         Map<String, DSpaceNode> result2_depth2_pub3 = neo4jService.readNodesByDepth(publication_3.getIDDB(), 2);
         assertEquals(3, result2_depth2_pub3.size());
+
+        DSpaceRelation rel_pub1_pub2 = neo4jService.readPropertiesRel(publication_1.getIDDB(), publication_2.getIDDB());
+        assertNull(rel_pub1_pub2);
+
+        DSpaceRelation rel_res3_pub3 = neo4jService.readPropertiesRel(researcher_3.getIDDB(), publication_3.getIDDB());
+        assertNotNull(rel_res3_pub3);
     }
 
     /**
@@ -738,11 +744,30 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Smith]}",
                 result2_id_res1.getMetadata().toString());
 
-        // TODO:Failed if set metadata to null, don't delete them
         researcher_1.setMetadata(null);
         neo4jService.createUpdateNode(researcher_1);
         DSpaceNode result3_id_res1 = neo4jService.readNodeById(generic_researcher.getIDDB());
-        // assertEquals("{}", result3_id_res1.getMetadata().toString());
+        assertEquals("{}", result3_id_res1.getMetadata().toString());
+
+        Map<String, DSpaceNode> result_type_res = neo4jService.readNodesByType(researcher_1.getEntityType());
+        assertEquals(1, result_type_res.size());
+    }
+
+    /**
+     * Test 15: create node with IDDB that starts with 0
+     * 
+     */
+    @Test
+    public void createNodeIDDBStartZero() {
+        neo4jService.deleteGraph();
+        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "001", null, null);
+        DSpaceNode researcher_2 = new DSpaceNode("Researcher", "002", null, null);
+        neo4jService.createUpdateNode(researcher_1);
+        neo4jService.createUpdateNode(researcher_2);
+        DSpaceNode result_id_res1 = neo4jService.readNodeById(researcher_1.getIDDB());
+        assertEquals("001", result_id_res1.getIDDB());
+        DSpaceNode result_id_res2 = neo4jService.readNodeById(researcher_2.getIDDB());
+        assertEquals("002", result_id_res2.getIDDB());
     }
 
 }
