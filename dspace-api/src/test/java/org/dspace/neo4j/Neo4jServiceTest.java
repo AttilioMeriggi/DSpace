@@ -760,14 +760,14 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
     @Test
     public void createNodeIDDBStartZero() {
         neo4jService.deleteGraph();
-        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "001", null, null);
-        DSpaceNode researcher_2 = new DSpaceNode("Researcher", "002", null, null);
+        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", null, null);
+        DSpaceNode researcher_2 = new DSpaceNode("Researcher", "2", null, null);
         neo4jService.createUpdateNode(researcher_1);
         neo4jService.createUpdateNode(researcher_2);
         DSpaceNode result_id_res1 = neo4jService.readNodeById(researcher_1.getIDDB());
-        assertEquals("001", result_id_res1.getIDDB());
+        assertEquals("1", result_id_res1.getIDDB());
         DSpaceNode result_id_res2 = neo4jService.readNodeById(researcher_2.getIDDB());
-        assertEquals("002", result_id_res2.getIDDB());
+        assertEquals("2", result_id_res2.getIDDB());
     }
 
 }

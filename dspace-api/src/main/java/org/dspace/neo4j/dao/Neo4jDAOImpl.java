@@ -36,19 +36,19 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             String entity_type = dsnode.getEntityType();
-            
-            //TODO: duplicate node, change with delete_node_with_relationship
-            /*{
+
+            /* remove all metadata if the node exist */
+            if (dsnode.getMetadata() == null || dsnode.getMetadata().size() <= 0) {
                 StringBuilder query = new StringBuilder();
                 query.append("MATCH (nodo:");
                 query.append(entity_type);
                 query.append("{IDDB:$x}) ");
-                query.append("SET nodo = {}");
+                query.append("SET nodo = {} ");
+                query.append("SET nodo = {IDDB:$y}");
                 String final_query = query.toString();
-                session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", dsnode.getIDDB())));
-            }*/
-            
-            this.deleteNodeWithRelationships(dsnode.getIDDB());
+                session.writeTransaction(
+                        tx -> tx.run(final_query, Values.parameters("x", dsnode.getIDDB(), "y", dsnode.getIDDB())));
+            }
 
             /* Node creation without relationships */
             {
@@ -82,27 +82,29 @@ public class Neo4jDAOImpl implements Neo4jDAO {
 
             /* Insert metadata in start node */
             Map<String, List<String>> metadata_start = dsnode.getMetadata();
-            for (String key : metadata_start.keySet()) {
-                List<String> metadata_curr = metadata_start.get(key);
-                String s = "[";
-                int i = 0;
-                for (String value : metadata_curr) {
-                    if (i != 0) {
-                        s += ",";
+            if (metadata_start != null) {
+                for (String key : metadata_start.keySet()) {
+                    List<String> metadata_curr = metadata_start.get(key);
+                    String s = "[";
+                    int i = 0;
+                    for (String value : metadata_curr) {
+                        if (i != 0) {
+                            s += ",";
+                        }
+                        s += "\"" + value + "\"";
+                        i++;
                     }
-                    s += "\"" + value + "\"";
-                    i++;
-                }
-                s += "]";
-                StringBuilder query = new StringBuilder();
-                query.append("MATCH (node1:");
-                query.append(entity_type);
-                query.append("{IDDB:$x}) SET node1.");
-                query.append(key.replaceAll("\\.|:", "_"));
-                query.append(" = " + s);
+                    s += "]";
+                    StringBuilder query = new StringBuilder();
+                    query.append("MATCH (node1:");
+                    query.append(entity_type);
+                    query.append("{IDDB:$x}) SET node1.");
+                    query.append(key.replaceAll("\\.|:", "_"));
+                    query.append(" = " + s);
 
-                String final_query = query.toString();
-                session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", dsnode.getIDDB())));
+                    String final_query = query.toString();
+                    session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", dsnode.getIDDB())));
+                }
             }
 
             /* Insert metadata in end nodes */

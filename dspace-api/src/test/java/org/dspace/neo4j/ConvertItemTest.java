@@ -108,7 +108,7 @@ public class ConvertItemTest extends AbstractNeo4jTest {
                     null, "Attilio Meriggi", itemPerson.getID().toString(), 0);
             itemService.setMetadataSingleValue(context, itemPublication, "relationship", "type", null, null,
                     "publication");
-            itemService.update(context, itemPerson);
+            itemService.update(context, itemPublication);
 
             // Perform test
             neo4jService.insertUpdateItem(context, itemPublication.getID());
@@ -125,9 +125,9 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             // TODO: error: relationship not created
             DSpaceRelation resultRelation = neo4jService.readPropertiesRel(itemPerson.getID().toString(),
                     itemPublication.getID().toString());
-            // assertNotNull(resultRelation);
+            assertNotNull(resultRelation);
             Map<String, DSpaceNode> result_by_depth = neo4jService.readNodesByDepth(itemPerson.getID().toString(), 1);
-            //assertEquals(1, result_by_depth.size());
+            assertEquals(1, result_by_depth.size());
 
             DSpaceNode itemPersonNode = neo4jService.readNodeById(itemPerson.getID().toString());
             assertEquals(itemPerson.getID().toString(), itemPersonNode.getIDDB());
