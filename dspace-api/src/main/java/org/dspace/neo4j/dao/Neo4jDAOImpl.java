@@ -38,7 +38,8 @@ public class Neo4jDAOImpl implements Neo4jDAO {
             String entity_type = dsnode.getEntityType();
 
             /* remove all metadata if the node exist */
-            if (dsnode.getMetadata() == null || dsnode.getMetadata().size() <= 0) {
+            //if (dsnode.getMetadata() == null || dsnode.getMetadata().size() <= 0) 
+            {
                 StringBuilder query = new StringBuilder();
                 query.append("MATCH (nodo:");
                 query.append(entity_type);

@@ -752,22 +752,25 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         Map<String, DSpaceNode> result_type_res = neo4jService.readNodesByType(researcher_1.getEntityType());
         assertEquals(1, result_type_res.size());
     }
-
-    /**
-     * Test 15: create node with IDDB that starts with 0
-     * 
-     */
+    
     @Test
-    public void createNodeIDDBStartZero() {
+    public void modifyMetadataTest() {
         neo4jService.deleteGraph();
-        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", null, null);
-        DSpaceNode researcher_2 = new DSpaceNode("Researcher", "2", null, null);
+        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, null);
         neo4jService.createUpdateNode(researcher_1);
-        neo4jService.createUpdateNode(researcher_2);
-        DSpaceNode result_id_res1 = neo4jService.readNodeById(researcher_1.getIDDB());
-        assertEquals("1", result_id_res1.getIDDB());
-        DSpaceNode result_id_res2 = neo4jService.readNodeById(researcher_2.getIDDB());
-        assertEquals("2", result_id_res2.getIDDB());
+        DSpaceNode result1_id_res1 = neo4jService.readNodeById(generic_researcher.getIDDB());
+        assertEquals("1", result1_id_res1.getIDDB());
+        assertEquals("[Smith]", result1_id_res1.getMetadata().get("dc_surname").toString());
+        
+        researcher_1.getMetadata().get("dc.surname").clear();
+
+        neo4jService.createUpdateNode(researcher_1);
+        DSpaceNode result3_id_res1 = neo4jService.readNodeById(generic_researcher.getIDDB());
+        assertNull(result3_id_res1.getMetadata().get("dc_surname"));
     }
 
+    
+    
+    
+    
 }
