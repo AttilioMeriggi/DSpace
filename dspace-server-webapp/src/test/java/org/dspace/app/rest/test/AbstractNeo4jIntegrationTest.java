@@ -5,7 +5,7 @@
  *
  * http://www.dspace.org/license/
  */
-package org.dspace;
+package org.dspace.app.rest.test;
 
 import org.junit.BeforeClass;
 import org.neo4j.harness.Neo4j;
@@ -18,7 +18,7 @@ import org.neo4j.harness.Neo4jBuilders;
  *
  * http://www.dspace.org/license/
  */
-public class AbstractNeo4jTest extends AbstractUnitTest {
+public class AbstractNeo4jIntegrationTest extends AbstractControllerIntegrationTest {
 
     protected static Neo4j neo4j;
 

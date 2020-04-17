@@ -50,7 +50,7 @@ public class Neo4jServiceImpl implements Neo4jService {
                 }
             }
             dsnode = new DSpaceNode(entityType, item.getID().toString());
-            this.createUpdateNode(dsnode);
+            this.createUpdateNode(context, dsnode);
         } catch (Exception e) {
             log.error("Error creating empty item", e);
 
@@ -101,7 +101,7 @@ public class Neo4jServiceImpl implements Neo4jService {
                 }
                 metadataNode.get(key).add(m.getValue());
             }
-            this.createUpdateNode(new DSpaceNode(entityType, id.toString(), metadataNode, relations));
+            this.createUpdateNode(context, new DSpaceNode(entityType, id.toString(), metadataNode, relations));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -110,45 +110,45 @@ public class Neo4jServiceImpl implements Neo4jService {
     @Override
     public void deleteItem(Context context, UUID id) {
         try {
-            this.deleteNodeWithRelationships(id.toString());
+            this.deleteNodeWithRelationships(context, id.toString());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
     }
 
     @Override
-    public void createUpdateNode(DSpaceNode dsnode) {
-        neo4jDAO.createUpdateNode(dsnode);
+    public void createUpdateNode(Context context, DSpaceNode dsnode) {
+        neo4jDAO.createUpdateNode(context, dsnode);
     }
 
     @Override
-    public void deleteNodeWithRelationships(String IDDB) {
-        neo4jDAO.deleteNodeWithRelationships(IDDB);
+    public void deleteNodeWithRelationships(Context context, String IDDB) {
+        neo4jDAO.deleteNodeWithRelationships(context, IDDB);
     }
 
     @Override
-    public void deleteGraph() {
-        neo4jDAO.deleteGraph();
+    public void deleteGraph(Context context) {
+        neo4jDAO.deleteGraph(context);
     }
 
     @Override
-    public Map<String, DSpaceNode> readNodesByType(String entityType) {
-        return neo4jDAO.readNodesByType(entityType);
+    public Map<String, DSpaceNode> readNodesByType(Context context, String entityType) {
+        return neo4jDAO.readNodesByType(context, entityType);
     }
 
     @Override
-    public DSpaceNode readNodeById(String IDDB) {
-        return neo4jDAO.readNodeById(IDDB);
+    public DSpaceNode readNodeById(Context context, String IDDB) {
+        return neo4jDAO.readNodeById(context, IDDB);
     }
 
     @Override
-    public DSpaceRelation readPropertiesRel(String IDDB1, String IDDB2) {
-        return neo4jDAO.readPropertiesRel(IDDB1, IDDB2);
+    public DSpaceRelation readPropertiesRel(Context context, String IDDB1, String IDDB2) {
+        return neo4jDAO.readPropertiesRel(context, IDDB1, IDDB2);
     }
 
     @Override
-    public Map<String, DSpaceNode> readNodesByDepth(String IDDB, int depth) {
-        return neo4jDAO.readNodesByDepth(IDDB, depth);
+    public Map<String, DSpaceNode> readNodesByDepth(Context context, String IDDB, int depth) {
+        return neo4jDAO.readNodesByDepth(context, IDDB, depth);
     }
 
     @Override

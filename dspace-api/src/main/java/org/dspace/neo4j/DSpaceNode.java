@@ -12,11 +12,18 @@ import java.util.Map;
 
 import org.hibernate.proxy.HibernateProxyHelper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class DSpaceNode {
     String entityType;
     String IDDB;
     Map<String, List<String>> metadata;
     List<DSpaceRelation> relations;
+
+    public DSpaceNode() {
+    }
 
     public DSpaceNode(String entityType) {
         this.entityType = entityType;
@@ -105,5 +112,46 @@ public class DSpaceNode {
         hash = 47 * hash + this.IDDB.hashCode();
         hash = 47 * hash + this.getIDDB().hashCode();
         return hash;
+    }
+
+    /***
+     * Convert to json
+     * 
+     * @return The json object
+     * @throws JsonProcessingException
+     */
+    public String toJson() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonString = mapper.writeValueAsString(this);
+
+        return jsonString;
+    }
+
+    /***
+     * Create a DSpaceNode from a jsonNode.
+     * 
+     * @param jsonNode The json serialized object.
+     * @return The DSpaceNode object
+     * @throws JsonProcessingException
+     */
+    static public DSpaceNode build(JsonNode jsonNode) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        DSpaceNode dspaceNode = mapper.treeToValue(jsonNode, DSpaceNode.class);
+        return dspaceNode;
+    }
+
+    /***
+     * Create a DSpaceNode from a jsonString.
+     * 
+     * @param jsonString The json serialized object.
+     * @return The DSpaceNode object
+     * @throws JsonProcessingException
+     */
+    static public DSpaceNode build(String jsonString) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        DSpaceNode dspaceNode = mapper.readValue(jsonString, DSpaceNode.class);
+        return dspaceNode;
     }
 }

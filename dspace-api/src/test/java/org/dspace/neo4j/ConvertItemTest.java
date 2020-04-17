@@ -67,7 +67,7 @@ public class ConvertItemTest extends AbstractNeo4jTest {
         try {
             context.turnOffAuthorisationSystem();
 
-            neo4jService.deleteGraph();
+            neo4jService.deleteGraph(context);
 
             // use ePerson as submitter
             EPerson eperson = ePersonService.create(context);
@@ -116,27 +116,30 @@ public class ConvertItemTest extends AbstractNeo4jTest {
 
             DSpaceNode sampleNodePerson = new DSpaceNode("person");
             DSpaceNode sampleNodePublication = new DSpaceNode("publication");
-            Map<String, DSpaceNode> numbPerson = neo4jService.readNodesByType(sampleNodePerson.getEntityType());
-            Map<String, DSpaceNode> numbPublication = neo4jService
-                    .readNodesByType(sampleNodePublication.getEntityType());
+            Map<String, DSpaceNode> numbPerson = neo4jService.readNodesByType(context,
+                    sampleNodePerson.getEntityType());
+            Map<String, DSpaceNode> numbPublication = neo4jService.readNodesByType(context,
+                    sampleNodePublication.getEntityType());
             assertEquals(1, numbPerson.size());
             assertEquals(1, numbPublication.size());
 
-            DSpaceRelation resultRelation = neo4jService.readPropertiesRel(itemPerson.getID().toString(),
+            // TODO: error: relationship not created
+            DSpaceRelation resultRelation = neo4jService.readPropertiesRel(context, itemPerson.getID().toString(),
                     itemPublication.getID().toString());
             assertNotNull(resultRelation);
             // TODO: failed read metadata relationship - there aren't metadata in relationship
             //assertEquals("", resultRelation.getMetadata().toString());
 
-            Map<String, DSpaceNode> result_by_depth = neo4jService.readNodesByDepth(itemPerson.getID().toString(), 1);
+            Map<String, DSpaceNode> result_by_depth = neo4jService.readNodesByDepth(context,
+                    itemPerson.getID().toString(), 1);
             assertEquals(1, result_by_depth.size());
 
-            DSpaceNode itemPersonNode = neo4jService.readNodeById(itemPerson.getID().toString());
+            DSpaceNode itemPersonNode = neo4jService.readNodeById(context, itemPerson.getID().toString());
             assertEquals(itemPerson.getID().toString(), itemPersonNode.getIDDB());
             assertEquals("[Attilio Meriggi]", itemPersonNode.getMetadata().get("dc_title").toString());
             assertEquals("[person]", itemPersonNode.getMetadata().get("relationship_type").toString());
 
-            DSpaceNode itemPublicationNode = neo4jService.readNodeById(itemPublication.getID().toString());
+            DSpaceNode itemPublicationNode = neo4jService.readNodeById(context, itemPublication.getID().toString());
             assertEquals(itemPublication.getID().toString(), itemPublicationNode.getIDDB());
             assertEquals("[Sample article]", itemPublicationNode.getMetadata().get("dc_title").toString());
             assertEquals("[Attilio Meriggi]",
@@ -145,23 +148,25 @@ public class ConvertItemTest extends AbstractNeo4jTest {
 
             neo4jService.deleteItem(context, itemPublication.getID());
 
-            DSpaceNode itemPublicationNodeAfterDeletePublication = neo4jService
-                    .readNodeById(itemPublication.getID().toString());
+            DSpaceNode itemPublicationNodeAfterDeletePublication = neo4jService.readNodeById(context,
+                    itemPublication.getID().toString());
             assertNull(itemPublicationNodeAfterDeletePublication);
 
-            DSpaceNode itemPersonNodeAfterDeletePublication = neo4jService.readNodeById(itemPerson.getID().toString());
+            DSpaceNode itemPersonNodeAfterDeletePublication = neo4jService.readNodeById(context,
+                    itemPerson.getID().toString());
             assertNotNull(itemPersonNodeAfterDeletePublication);
 
             neo4jService.deleteItem(context, itemPerson.getID());
-            DSpaceNode itemPersonNodeAfterDeletePerson = neo4jService.readNodeById(itemPerson.getID().toString());
+            DSpaceNode itemPersonNodeAfterDeletePerson = neo4jService.readNodeById(context,
+                    itemPerson.getID().toString());
             assertNull(itemPersonNodeAfterDeletePerson);
 
-            Map<String, DSpaceNode> numbPersonAfterDelete = neo4jService
-                    .readNodesByType(sampleNodePerson.getEntityType());
+            Map<String, DSpaceNode> numbPersonAfterDelete = neo4jService.readNodesByType(context,
+                    sampleNodePerson.getEntityType());
             assertTrue(numbPersonAfterDelete.isEmpty());
 
-            Map<String, DSpaceNode> numbPublicationAfterDelete = neo4jService
-                    .readNodesByType(sampleNodePublication.getEntityType());
+            Map<String, DSpaceNode> numbPublicationAfterDelete = neo4jService.readNodesByType(context,
+                    sampleNodePublication.getEntityType());
             assertTrue(numbPublicationAfterDelete.isEmpty());
 
             context.restoreAuthSystemState();
@@ -183,7 +188,7 @@ public class ConvertItemTest extends AbstractNeo4jTest {
         try {
             context.turnOffAuthorisationSystem();
 
-            neo4jService.deleteGraph();
+            neo4jService.deleteGraph(context);
 
             // use ePerson as submitter
             EPerson eperson = ePersonService.create(context);
@@ -214,15 +219,15 @@ public class ConvertItemTest extends AbstractNeo4jTest {
 
             /* "person" is default type */
             DSpaceNode sampleNodePerson = new DSpaceNode("person");
-            Map<String, DSpaceNode> personTypeBeforeInsert = neo4jService
-                    .readNodesByType(sampleNodePerson.getEntityType());
+            Map<String, DSpaceNode> personTypeBeforeInsert = neo4jService.readNodesByType(context,
+                    sampleNodePerson.getEntityType());
             assertTrue(personTypeBeforeInsert.isEmpty());
 
             // Perform test
             neo4jService.insertUpdateItem(context, itemWithoutType.getID());
 
-            Map<String, DSpaceNode> personTypeAfterInsert = neo4jService
-                    .readNodesByType(sampleNodePerson.getEntityType());
+            Map<String, DSpaceNode> personTypeAfterInsert = neo4jService.readNodesByType(context,
+                    sampleNodePerson.getEntityType());
             assertEquals(1, personTypeAfterInsert.size());
 
             context.restoreAuthSystemState();
