@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class Neo4jSerializeTest extends AbstractUnitTest {
     private static final Logger log = LogManager.getLogger(Neo4jSerializeTest.class);
@@ -164,8 +164,7 @@ public class Neo4jSerializeTest extends AbstractUnitTest {
         list_rel_pub1.add(rel3_pub1);
         DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, list_rel_pub1);
 
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonString = mapper.writeValueAsString(publication_1);
+        String jsonString = publication_1.toJson();
 
         assertEquals("{\"entityType\":\"Publication\",\"metadata\":"
                 + "{\"dc.type\":[\"Magazine\"],\"dc.title\":[\"Web Research\"]},"
@@ -183,5 +182,52 @@ public class Neo4jSerializeTest extends AbstractUnitTest {
                 + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":{\"dc.name\":[\"Tom\"],"
                 + "\"dc.surname\":[\"Taylor\"],\"dc.department\":[\"Oxford University\"]},"
                 + "\"relations\":null,\"iddb\":\"3\"}}],\"iddb\":\"101\"}", jsonString);
+    }
+
+    /**
+     * Test 5: deserialize a graph with three researcher nodes and one publication
+     * node and then delete it
+     * 
+     * @throws JsonMappingException
+     * @throws JsonProcessingException
+     */
+    @Test
+    public void deserializeTest() throws JsonMappingException, JsonProcessingException {
+        String jsonNodeString = "{\"entityType\":\"Publication\",\"metadata\":"
+                + "{\"dc.type\":[\"Magazine\"],\"dc.title\":[\"Web Research\"]},"
+                + "\"relations\":[{\"type\":\"coauthor\",\"metadata\":{\"rel.date\":[\"13/01/2020\"],"
+                + "\"rel.place\":[\"Italy\",\"Usa\",\"Spain\"]},"
+                + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":"
+                + "{\"dc.name\":[\"Steve\"],\"dc.surname\":[\"Smith\"],"
+                + "\"dc.department\":[\"Oxford University\",\"Roma Tre\"]},"
+                + "\"relations\":null,\"iddb\":\"1\"}},{\"type\":\"coauthor\",\"metadata\":"
+                + "{\"rel.date\":[\"20/01/2020\"],\"rel.place\":[\"Italy\",\"Usa\",\"Japan\"]},"
+                + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":{\"dc.name\":[\"Claire\"],"
+                + "\"dc.surname\":[\"Williams\"],\"dc.department\":[\"Bocconi\",\"Sapienza\"]},"
+                + "\"relations\":null,\"iddb\":\"2\"}},{\"type\":\"collaboration\",\"metadata\":"
+                + "{\"rel.date\":[\"24/07/2020\"],\"rel.place\":[\"Argentina\"]},"
+                + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":{\"dc.name\":[\"Tom\"],"
+                + "\"dc.surname\":[\"Taylor\"],\"dc.department\":[\"Oxford University\"]},"
+                + "\"relations\":null,\"iddb\":\"3\"}}],\"iddb\":\"101\"}";
+
+        DSpaceNode publication_1 = DSpaceNode.build(jsonNodeString);
+
+        /* expected */
+        DSpaceNode expected = null;
+        {
+            DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, null);
+            DSpaceNode researcher_2 = new DSpaceNode("Researcher", "2", metadata_res2, null);
+            DSpaceNode researcher_3 = new DSpaceNode("Researcher", "3", metadata_res3, null);
+            DSpaceRelation rel1_pub1 = new DSpaceRelation("coauthor", researcher_1, metadata_rel1);
+            DSpaceRelation rel2_pub1 = new DSpaceRelation("coauthor", researcher_2, metadata_rel2);
+            DSpaceRelation rel3_pub1 = new DSpaceRelation("collaboration", researcher_3, metadata_rel3);
+            List<DSpaceRelation> list_rel_pub1 = new ArrayList<DSpaceRelation>();
+            list_rel_pub1.add(rel1_pub1);
+            list_rel_pub1.add(rel2_pub1);
+            list_rel_pub1.add(rel3_pub1);
+            expected = new DSpaceNode("Publication", "101", metadata_pub1, list_rel_pub1);
+        }
+
+        assertEquals(expected, publication_1);
     }
 }

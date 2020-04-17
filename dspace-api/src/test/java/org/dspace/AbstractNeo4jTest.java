@@ -1,3 +1,10 @@
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
 package org.dspace;
 
 import org.junit.BeforeClass;
@@ -28,17 +35,4 @@ public class AbstractNeo4jTest extends AbstractUnitTest {
     public static void initNeo4j() {
         neo4j = Neo4jBuilders.newInProcessBuilder().build();
     }
-
-//    /**
-//     * This method will be run before every test as per @Before. It will initialize
-//     * resources required for each individual unit test.
-//     *
-//     * Other methods can be annotated with @Before here or in subclasses but no
-//     * execution order is guaranteed
-//     */
-//    @Before
-//    @Override
-//    public void init() {
-//        super.init();
-//    }
 }

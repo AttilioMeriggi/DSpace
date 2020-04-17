@@ -552,6 +552,24 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- neo4j 4.0.3 is recompiled with jetty.version 9.4.19.v20190610 -->
+        <dependency>
+            <groupId>org.neo4j.test</groupId>
+            <artifactId>neo4j-harness</artifactId>
+            <version>4.0.3</version>
+            <scope>test</scope>
+            <exclusions>
+                <!-- More recent version in project -->
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-server</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-webapp</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
 </project>

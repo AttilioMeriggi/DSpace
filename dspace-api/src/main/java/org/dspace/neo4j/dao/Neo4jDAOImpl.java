@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.dspace.core.Context;
 import org.dspace.neo4j.AuthenticationDriver;
 import org.dspace.neo4j.DSpaceNode;
 import org.dspace.neo4j.DSpaceRelation;
@@ -32,13 +33,13 @@ public class Neo4jDAOImpl implements Neo4jDAO {
     }
 
     @Override
-    public void createUpdateNode(DSpaceNode dsnode) {
+    public void createUpdateNode(Context context, DSpaceNode dsnode) {
         AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             String entity_type = dsnode.getEntityType();
 
             /* remove all metadata if the node exist */
-            //if (dsnode.getMetadata() == null || dsnode.getMetadata().size() <= 0) 
+            // if (dsnode.getMetadata() == null || dsnode.getMetadata().size() <= 0)
             {
                 StringBuilder query = new StringBuilder();
                 query.append("MATCH (nodo:");
@@ -185,7 +186,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
     }
 
     @Override
-    public void deleteNodeWithRelationships(String IDDB) {
+    public void deleteNodeWithRelationships(Context context, String IDDB) {
         AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             StringBuilder query = new StringBuilder();
@@ -202,7 +203,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
     }
 
     @Override
-    public void deleteGraph() {
+    public void deleteGraph(Context context) {
         AuthenticationDriver auth_driver = getAuthDriver();
         try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
             StringBuilder query = new StringBuilder();
@@ -223,7 +224,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @return list maps properties nodes or EmptyList
      */
     @Override
-    public Map<String, DSpaceNode> readNodesByType(String entityType) {
+    public Map<String, DSpaceNode> readNodesByType(Context context, String entityType) {
         AuthenticationDriver auth_driver = getAuthDriver();
         Map<String, DSpaceNode> final_map = new HashMap<String, DSpaceNode>();
         Map<String, Object> record_map = new HashMap<String, Object>();
@@ -283,7 +284,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @return node map with all properties or EmptyMap
      */
     @Override
-    public DSpaceNode readNodeById(String IDDB) {
+    public DSpaceNode readNodeById(Context context, String IDDB) {
         AuthenticationDriver auth_driver = getAuthDriver();
         DSpaceNode readNode = null;
         Map<String, Object> record_map = new HashMap<String, Object>();
@@ -332,7 +333,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * 
      */
     @Override
-    public DSpaceRelation readPropertiesRel(String IDDB1, String IDDB2) {
+    public DSpaceRelation readPropertiesRel(Context context, String IDDB1, String IDDB2) {
         AuthenticationDriver auth_driver = getAuthDriver();
         DSpaceRelation final_rel = null;
         Map<String, Object> record_map = new HashMap<String, Object>();
@@ -379,7 +380,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * @return list maps properties node or EmptyList
      */
     @Override
-    public Map<String, DSpaceNode> readNodesByDepth(String IDDB, int depth) {
+    public Map<String, DSpaceNode> readNodesByDepth(Context context, String IDDB, int depth) {
         AuthenticationDriver auth_driver = getAuthDriver();
         Map<String, DSpaceNode> final_map = new HashMap<String, DSpaceNode>();
         Map<String, Object> record_map = new HashMap<String, Object>();

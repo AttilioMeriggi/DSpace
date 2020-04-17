@@ -24,25 +24,25 @@ public interface Neo4jService {
     public void deleteItem(Context context, UUID id);
 
     /* Service Neo4j for creating or updating nodes with their relationships */
-    public void createUpdateNode(DSpaceNode dsnode);
+    public void createUpdateNode(Context context, DSpaceNode dsnode);
 
     /* Service Neo4j for deleating nodes with their relationships */
-    public void deleteNodeWithRelationships(String IDDB);
+    public void deleteNodeWithRelationships(Context context, String IDDB);
 
     /* Service Neo4j for delete all graph */
-    public void deleteGraph();
+    public void deleteGraph(Context context);
 
     /* Service Neo4j for reading the nodes of a specific label */
-    public Map<String, DSpaceNode> readNodesByType(String entityType);
+    public Map<String, DSpaceNode> readNodesByType(Context context, String entityType);
 
     /* Service Neo4j for reading node of a specific IDDB */
-    public DSpaceNode readNodeById(String IDDB);
+    public DSpaceNode readNodeById(Context context, String IDDB);
 
     /* Service to read relationship properties between two nodes */
-    public DSpaceRelation readPropertiesRel(String IDDB1, String IDDB2);
+    public DSpaceRelation readPropertiesRel(Context context, String IDDB1, String IDDB2);
 
     /* Service Neo4j for reading all nodes at a certain depth from that specified */
-    public Map<String, DSpaceNode> readNodesByDepth(String IDDB, int depth);
+    public Map<String, DSpaceNode> readNodesByDepth(Context context, String IDDB, int depth);
 
     public void setAuthDriver(AuthenticationDriver authDriver);
 }
