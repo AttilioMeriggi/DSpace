@@ -752,7 +752,11 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         Map<String, DSpaceNode> result_type_res = neo4jService.readNodesByType(researcher_1.getEntityType());
         assertEquals(1, result_type_res.size());
     }
-    
+
+    /**
+     * Test 15: delete one metadata
+     * 
+     */
     @Test
     public void modifyMetadataTest() {
         neo4jService.deleteGraph();
@@ -761,7 +765,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode result1_id_res1 = neo4jService.readNodeById(generic_researcher.getIDDB());
         assertEquals("1", result1_id_res1.getIDDB());
         assertEquals("[Smith]", result1_id_res1.getMetadata().get("dc_surname").toString());
-        
+
         researcher_1.getMetadata().get("dc.surname").clear();
 
         neo4jService.createUpdateNode(researcher_1);
@@ -769,8 +773,4 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         assertNull(result3_id_res1.getMetadata().get("dc_surname"));
     }
 
-    
-    
-    
-    
 }

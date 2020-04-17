@@ -63,7 +63,7 @@ public class ConvertItemTest extends AbstractNeo4jTest {
     }
 
     @Test
-    public void convertItem() throws IOException {
+    public void convertItemTest() throws IOException {
         try {
             context.turnOffAuthorisationSystem();
 
@@ -122,10 +122,12 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             assertEquals(1, numbPerson.size());
             assertEquals(1, numbPublication.size());
 
-            // TODO: error: relationship not created
             DSpaceRelation resultRelation = neo4jService.readPropertiesRel(itemPerson.getID().toString(),
                     itemPublication.getID().toString());
             assertNotNull(resultRelation);
+            // TODO: failed read metadata relationship - there aren't metadata in relationship
+            //assertEquals("", resultRelation.getMetadata().toString());
+
             Map<String, DSpaceNode> result_by_depth = neo4jService.readNodesByDepth(itemPerson.getID().toString(), 1);
             assertEquals(1, result_by_depth.size());
 
@@ -177,7 +179,7 @@ public class ConvertItemTest extends AbstractNeo4jTest {
      * @throws IOException
      */
     @Test
-    public void createItemWithoutMetadataType() throws IOException {
+    public void createItemWithoutMetadataTypeTest() throws IOException {
         try {
             context.turnOffAuthorisationSystem();
 
@@ -239,7 +241,7 @@ public class ConvertItemTest extends AbstractNeo4jTest {
      * @throws IOException
      */
     @Test
-    public void createItemsWithoutRelationship() throws IOException {
+    public void createItemsWithoutRelationshipTest() throws IOException {
         try {
             context.turnOffAuthorisationSystem();
             // use ePerson as submitter
