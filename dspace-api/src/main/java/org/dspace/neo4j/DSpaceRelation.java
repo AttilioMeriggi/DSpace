@@ -15,6 +15,9 @@ public class DSpaceRelation {
     Map<String, List<String>> metadata;
     DSpaceNode target;
 
+    public DSpaceRelation() {
+    }
+
     public DSpaceRelation(Map<String, List<String>> metadata) {
         this.metadata = metadata;
     }
@@ -48,5 +51,4 @@ public class DSpaceRelation {
     public void setTarget(DSpaceNode target) {
         this.target = target;
     }
-
 }
