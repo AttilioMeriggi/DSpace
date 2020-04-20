@@ -113,27 +113,29 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                 for (DSpaceRelation rels : dsnode.getRelations()) {
                     DSpaceNode curr = rels.getTarget();
                     Map<String, List<String>> curr_metadata = curr.getMetadata();
-                    for (String key : curr_metadata.keySet()) {
-                        List<String> metadata_curr = curr_metadata.get(key);
-                        String s = "[";
-                        int i = 0;
-                        for (String value : metadata_curr) {
-                            if (i != 0) {
-                                s += ",";
+                    if (curr_metadata != null) {
+                        for (String key : curr_metadata.keySet()) {
+                            List<String> metadata_curr = curr_metadata.get(key);
+                            String s = "[";
+                            int i = 0;
+                            for (String value : metadata_curr) {
+                                if (i != 0) {
+                                    s += ",";
+                                }
+                                s += "\"" + value + "\"";
+                                i++;
                             }
-                            s += "\"" + value + "\"";
-                            i++;
-                        }
-                        s += "]";
-                        StringBuilder query = new StringBuilder();
-                        query.append("MATCH (node:");
-                        query.append(curr.getEntityType());
-                        query.append("{IDDB:$x}) SET node.");
-                        query.append(key.replaceAll("\\.|:", "_"));
-                        query.append(" = " + s);
+                            s += "]";
+                            StringBuilder query = new StringBuilder();
+                            query.append("MATCH (node:");
+                            query.append(curr.getEntityType());
+                            query.append("{IDDB:$x}) SET node.");
+                            query.append(key.replaceAll("\\.|:", "_"));
+                            query.append(" = " + s);
 
-                        String final_query = query.toString();
-                        session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", curr.getIDDB())));
+                            String final_query = query.toString();
+                            session.writeTransaction(tx -> tx.run(final_query, Values.parameters("x", curr.getIDDB())));
+                        }
                     }
                 }
             }
@@ -142,38 +144,40 @@ public class Neo4jDAOImpl implements Neo4jDAO {
             if (dsnode.getRelations() != null) {
                 for (DSpaceRelation rels : dsnode.getRelations()) {
                     Map<String, List<String>> metadata_rels = rels.getMetadata();
-                    for (String key : metadata_rels.keySet()) {
-                        List<String> metadata_curr = metadata_rels.get(key);
-                        String s = "[";
-                        int i = 0;
-                        for (String value : metadata_curr) {
-                            if (i != 0) {
-                                s += ",";
+                    if (metadata_rels != null) {
+                        for (String key : metadata_rels.keySet()) {
+                            List<String> metadata_curr = metadata_rels.get(key);
+                            String s = "[";
+                            int i = 0;
+                            for (String value : metadata_curr) {
+                                if (i != 0) {
+                                    s += ",";
+                                }
+                                s += "\"" + value + "\"";
+                                i++;
                             }
-                            s += "\"" + value + "\"";
-                            i++;
-                        }
-                        s += "]";
-                        StringBuilder query = new StringBuilder();
-                        query.append("MATCH (node1:");
-                        query.append(entity_type);
-                        query.append("{IDDB:\"");
-                        query.append(dsnode.getIDDB());
-                        query.append("\"})");
-                        query.append("-[rels:");
-                        query.append(rels.getType());
-                        query.append("]-");
-                        query.append("(node2:");
-                        query.append(rels.getTarget().getEntityType());
-                        query.append("{IDDB:\"");
-                        query.append(rels.getTarget().getIDDB());
-                        query.append("\"}) ");
-                        query.append("SET rels.");
-                        query.append(key.replaceAll("\\.|:", "_"));
-                        query.append(" = " + s);
+                            s += "]";
+                            StringBuilder query = new StringBuilder();
+                            query.append("MATCH (node1:");
+                            query.append(entity_type);
+                            query.append("{IDDB:\"");
+                            query.append(dsnode.getIDDB());
+                            query.append("\"})");
+                            query.append("-[rels:");
+                            query.append(rels.getType());
+                            query.append("]-");
+                            query.append("(node2:");
+                            query.append(rels.getTarget().getEntityType());
+                            query.append("{IDDB:\"");
+                            query.append(rels.getTarget().getIDDB());
+                            query.append("\"}) ");
+                            query.append("SET rels.");
+                            query.append(key.replaceAll("\\.|:", "_"));
+                            query.append(" = " + s);
 
-                        String final_query = query.toString();
-                        session.writeTransaction(tx -> tx.run(final_query));
+                            String final_query = query.toString();
+                            session.writeTransaction(tx -> tx.run(final_query));
+                        }
                     }
                 }
             }

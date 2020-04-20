@@ -68,19 +68,24 @@ public class Neo4jServiceImpl implements Neo4jService {
 
             List<MetadataValue> metadataItem = item.getMetadata();
             for (MetadataValue metadataValue : metadataItem) {
-                if (metadataValue.getAuthority() != null) {
-                    String idAuthority = metadataValue.getAuthority();
-                    DSpaceNode converted = buildEmptyItem(context, UUID.fromString(idAuthority));
-                    Map<String, List<String>> metadataNode = new HashMap<String, List<String>>();
-                    for (MetadataValue m : metadataItem) {
-                        String key = m.getMetadataField().toString();
-                        if (!metadataNode.containsKey(key)) {
-                            metadataNode.put(key, new ArrayList<String>());
-                        }
-                        metadataNode.get(key).add(m.getValue());
-                    }
+                try {
+                    if (metadataValue.getAuthority() != null) {
 
-                    relations.add(new DSpaceRelation(converted.getEntityType(), converted, metadataNode));
+                        String idAuthority = metadataValue.getAuthority();
+                        DSpaceNode converted = buildEmptyItem(context, UUID.fromString(idAuthority));
+                        Map<String, List<String>> metadataNode = new HashMap<String, List<String>>();
+                        for (MetadataValue m : metadataItem) {
+                            String key = m.getMetadataField().toString();
+                            if (!metadataNode.containsKey(key)) {
+                                metadataNode.put(key, new ArrayList<String>());
+                            }
+                            metadataNode.get(key).add(m.getValue());
+                        }
+
+                        relations.add(new DSpaceRelation(converted.getEntityType(), converted, metadataNode));
+                    }
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
                 }
             }
             List<MetadataValue> values = itemService.getMetadata(item, "relationship", "type", null, null);

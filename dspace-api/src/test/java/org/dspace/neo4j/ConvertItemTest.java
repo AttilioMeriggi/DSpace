@@ -123,12 +123,9 @@ public class ConvertItemTest extends AbstractNeo4jTest {
             assertEquals(1, numbPerson.size());
             assertEquals(1, numbPublication.size());
 
-            // TODO: error: relationship not created
             DSpaceRelation resultRelation = neo4jService.readPropertiesRel(context, itemPerson.getID().toString(),
                     itemPublication.getID().toString());
             assertNotNull(resultRelation);
-            // TODO: failed read metadata relationship - there aren't metadata in relationship
-            //assertEquals("", resultRelation.getMetadata().toString());
 
             Map<String, DSpaceNode> result_by_depth = neo4jService.readNodesByDepth(context,
                     itemPerson.getID().toString(), 1);
@@ -249,6 +246,9 @@ public class ConvertItemTest extends AbstractNeo4jTest {
     public void createItemsWithoutRelationshipTest() throws IOException {
         try {
             context.turnOffAuthorisationSystem();
+
+            neo4jService.deleteGraph(context);
+
             // use ePerson as submitter
             EPerson eperson = ePersonService.create(context);
             eperson.setEmail("attilio@sample.ue");
@@ -269,7 +269,36 @@ public class ConvertItemTest extends AbstractNeo4jTest {
                     null, null, "My Collection");
             collectionService.update(context, collection);
 
-            // TODO: perform test
+            // create an ItemPerson
+            WorkspaceItem wiPerson = workspaceItemService.create(context, collection, false);
+            Item itemPerson = wiPerson.getItem();
+            itemService.setMetadataSingleValue(context, itemPerson, MetadataSchemaEnum.DC.getName(), "title", null,
+                    null, "Attilio Meriggi");
+            itemService.setMetadataSingleValue(context, itemPerson, "relationship", "type", null, null, "person");
+            itemService.update(context, itemPerson);
+
+            // create an ItemPublication
+            WorkspaceItem wiPublication = workspaceItemService.create(context, collection, false);
+            Item itemPublication = wiPublication.getItem();
+            itemService.setMetadataSingleValue(context, itemPublication, MetadataSchemaEnum.DC.getName(), "title", null,
+                    null, "Sample article");
+            itemService.addMetadata(context, itemPublication, MetadataSchemaEnum.DC.getName(), "contributor", "author",
+                    null, "Attilio Meriggi", "abc7485938292048568603abc", 0);
+            itemService.setMetadataSingleValue(context, itemPublication, "relationship", "type", null, null,
+                    "publication");
+            itemService.update(context, itemPublication);
+
+            neo4jService.insertUpdateItem(context, itemPerson.getID());
+            neo4jService.insertUpdateItem(context, itemPublication.getID());
+
+            DSpaceRelation relsItemPersonItemPublication = neo4jService.readPropertiesRel(context,
+                    itemPerson.getID().toString(), itemPublication.getID().toString());
+            assertNull(relsItemPersonItemPublication);
+
+            Map<String, DSpaceNode> readNodePerson = neo4jService.readNodesByType(context, "person");
+            assertEquals(1, readNodePerson.size());
+            Map<String, DSpaceNode> readNodePublication = neo4jService.readNodesByType(context, "publication");
+            assertEquals(1, readNodePublication.size());
 
             context.restoreAuthSystemState();
 
