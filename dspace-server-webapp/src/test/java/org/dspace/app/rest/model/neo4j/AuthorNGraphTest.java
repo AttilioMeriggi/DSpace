@@ -1,0 +1,176 @@
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
+package org.dspace.app.rest.model.neo4j;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.dspace.app.rest.neo4j.Neo4jRestIT;
+import org.dspace.app.rest.test.AbstractNeo4jIntegrationTest;
+import org.dspace.neo4j.AuthenticationDriver;
+import org.dspace.neo4j.DSpaceNode;
+import org.dspace.neo4j.factory.Neo4jFactory;
+import org.dspace.neo4j.service.Neo4jService;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
+
+    private static final Logger log = LogManager.getLogger(Neo4jRestIT.class);
+    private Neo4jService neo4jService = Neo4jFactory.getInstance().getNeo4jService();
+    private AuthenticationDriver authDriver = null;
+
+    private DSpaceNode generic_researcher;
+    private DSpaceNode generic_publication;
+
+    private Map<String, List<String>> metadata_res1;
+    private Map<String, List<String>> metadata_res2;
+    private Map<String, List<String>> metadata_res3;
+
+    private Map<String, List<String>> metadata_pub1;
+    private Map<String, List<String>> metadata_pub2;
+    private Map<String, List<String>> metadata_pub3;
+
+    private Map<String, List<String>> metadata_rel1;
+    private Map<String, List<String>> metadata_rel2;
+    private Map<String, List<String>> metadata_rel3;
+
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        try {
+            super.setUp();
+
+            authDriver = new AuthenticationDriver(neo4j.boltURI().toString(), null, null);
+            neo4jService.setAuthDriver(authDriver);
+
+            /* fill objects and metadata */
+            generic_researcher = new DSpaceNode("Researcher", "1");
+            generic_publication = new DSpaceNode("Publication", "101");
+
+            /* Metadata researcher_1 IDDB = 1 */
+            metadata_res1 = new HashMap<String, List<String>>();
+            List<String> list1_res1 = new ArrayList<>();
+            list1_res1.add("Steve");
+            List<String> list2_res1 = new ArrayList<>();
+            list2_res1.add("Smith");
+            List<String> list3_res1 = new ArrayList<String>();
+            list3_res1.add("Oxford University");
+            list3_res1.add("Roma Tre");
+            metadata_res1.put("dc.name", list1_res1);
+            metadata_res1.put("dc.surname", list2_res1);
+            metadata_res1.put("dc.department", list3_res1);
+
+            /* Metadata researcher_2 IDDB = 2 */
+            metadata_res2 = new HashMap<String, List<String>>();
+            List<String> list1_res2 = new ArrayList<>();
+            list1_res2.add("Claire");
+            List<String> list2_res2 = new ArrayList<>();
+            list2_res2.add("Williams");
+            List<String> list3_res2 = new ArrayList<String>();
+            list3_res2.add("Bocconi");
+            list3_res2.add("Sapienza");
+            metadata_res2.put("dc.name", list1_res2);
+            metadata_res2.put("dc.surname", list2_res2);
+            metadata_res2.put("dc.department", list3_res2);
+
+            /* Metadata researcher_3 IDDB = 3 */
+            metadata_res3 = new HashMap<String, List<String>>();
+            List<String> list1_res3 = new ArrayList<>();
+            list1_res3.add("Tom");
+            List<String> list2_res3 = new ArrayList<>();
+            list2_res3.add("Taylor");
+            List<String> list3_res3 = new ArrayList<String>();
+            list3_res3.add("Oxford University");
+            metadata_res3.put("dc.name", list1_res3);
+            metadata_res3.put("dc.surname", list2_res3);
+            metadata_res3.put("dc.department", list3_res3);
+
+            /* Metadata publication_1 IDDB = 101 */
+            metadata_pub1 = new HashMap<String, List<String>>();
+            List<String> list1_pub1 = new ArrayList<>();
+            list1_pub1.add("Web Research");
+            List<String> list2_pub1 = new ArrayList<>();
+            list2_pub1.add("Magazine");
+            metadata_pub1.put("dc.title", list1_pub1);
+            metadata_pub1.put("dc.type", list2_pub1);
+
+            /* Metadata publication_2 IDDB = 102 */
+            metadata_pub2 = new HashMap<String, List<String>>();
+            List<String> list1_pub2 = new ArrayList<>();
+            list1_pub2.add("Software Research");
+            List<String> list2_pub2 = new ArrayList<>();
+            list2_pub2.add("Item");
+            metadata_pub2.put("dc.title", list1_pub2);
+            metadata_pub2.put("dc.type", list2_pub2);
+
+            /* Metadata publication_3 IDDB = 103 */
+            metadata_pub3 = new HashMap<String, List<String>>();
+            List<String> list1_pub3 = new ArrayList<>();
+            list1_pub3.add("Cluster Analysis");
+            List<String> list2_pub3 = new ArrayList<>();
+            list2_pub3.add("Item");
+            metadata_pub3.put("dc.title", list1_pub3);
+            metadata_pub3.put("dc.type", list2_pub3);
+
+            /* Metadata relationship_1 */
+            metadata_rel1 = new HashMap<String, List<String>>();
+            List<String> list1_rel1 = new ArrayList<>();
+            list1_rel1.add("13/01/2020");
+            List<String> list2_rel1 = new ArrayList<>();
+            list2_rel1.add("Italy");
+            list2_rel1.add("Usa");
+            list2_rel1.add("Spain");
+            metadata_rel1.put("rel.date", list1_rel1);
+            metadata_rel1.put("rel.place", list2_rel1);
+
+            /* Metadata relationship_2 */
+            metadata_rel2 = new HashMap<String, List<String>>();
+            List<String> list1_rel2 = new ArrayList<>();
+            list1_rel2.add("20/01/2020");
+            List<String> list2_rel2 = new ArrayList<>();
+            list2_rel2.add("Italy");
+            list2_rel2.add("Usa");
+            list2_rel2.add("Japan");
+            metadata_rel2.put("rel.date", list1_rel2);
+            metadata_rel2.put("rel.place", list2_rel2);
+
+            /* Metadata relationship_3 */
+            metadata_rel3 = new HashMap<String, List<String>>();
+            List<String> list1_rel3 = new ArrayList<>();
+            list1_rel3.add("24/07/2020");
+            List<String> list2_rel3 = new ArrayList<>();
+            list2_rel3.add("Argentina");
+            metadata_rel3.put("rel.date", list1_rel3);
+            metadata_rel3.put("rel.place", list2_rel3);
+
+            /* clean up neo4j */
+            neo4jService.deleteGraph(context);
+        } catch (Exception ex) {
+            log.error("Error during test initialization", ex);
+        }
+    }
+    
+    @Test
+    public void deserialize() throws JsonProcessingException {
+        String jsonNode = "{id: \"190_0\", name: \"Pearl Jam\", children: [{"
+                + " id: \"306208_1\", name: \"Pearl Jam &amp; Cypress Hill\", data: {"
+                + " relation: \"<h4>Pearl Jam &amp; Cypress Hill</h4>\"}" + "  }]}";
+        
+        AuthorNGraph authorNGraph = AuthorNGraph.build(jsonNode);
+        assertEquals("check name", "Pearl Jam", authorNGraph.getName());
+    }
+}

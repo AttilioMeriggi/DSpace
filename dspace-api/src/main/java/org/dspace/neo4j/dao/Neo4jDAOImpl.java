@@ -7,6 +7,7 @@
  */
 package org.dspace.neo4j.dao;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -319,8 +320,10 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                                 break;
                             default:
                         }
+                        readNode.setEntityType(readNodeLabel(context, ID));
                         readNode.setIDDB(ID);
                         readNode.setMetadata(currMetadata);
+                        readNode.setRelations(readNodeRelationships(context, ID));
                     }
                 }
             }
@@ -329,6 +332,95 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         } finally {
         }
         return readNode;
+    }
+
+    /**
+     * Read all node relationships and related data
+     * 
+     * @param context
+     * @param IDDB
+     * @return list of relationships
+     */
+    private List<DSpaceRelation> readNodeRelationships(Context context, String IDDB) {
+        Map<String, DSpaceNode> relatedNodes = readNodesByDepth(context, IDDB, 1);
+        List<DSpaceRelation> relations = new ArrayList<DSpaceRelation>();
+        for (String s : relatedNodes.keySet()) {
+            DSpaceRelation currRelation = new DSpaceRelation();
+            currRelation.setType(readTypeRelationships(context, IDDB, relatedNodes.get(s).getIDDB()));
+            currRelation.setTarget(relatedNodes.get(s));
+            relatedNodes.get(s).setEntityType(readNodeLabel(context, relatedNodes.get(s).getIDDB()));
+            currRelation.setMetadata(readPropertiesRel(context, IDDB, relatedNodes.get(s).getIDDB()).getMetadata());
+            relations.add(currRelation);
+        }
+        return relations;
+    }
+
+    /**
+     * reads the type of the relationship between two nodes
+     * 
+     * @param context
+     * @param IDDB1
+     * @param IDDB2
+     * @return relationship type
+     */
+    private String readTypeRelationships(Context context, String IDDB1, String IDDB2) {
+        AuthenticationDriver auth_driver = getAuthDriver();
+        String relationType = null;
+        Map<String, Object> record_map = new HashMap<String, Object>();
+        try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
+            StringBuilder query = new StringBuilder();
+            query.append("MATCH (node1{IDDB:$x})-[rel]-(node2{IDDB:$y}) RETURN type(rel)");
+            String final_query = query.toString();
+            Result result = session.run(final_query, Values.parameters("x", IDDB1, "y", IDDB2));
+            for (Record record : result.list()) {
+                record_map = record.asMap();
+                for (String s : record_map.keySet()) {
+                    relationType = (String) record_map.get(s);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+        }
+        return relationType;
+    }
+
+    /**
+     * reads all node labels, in our case we only have one (publication or
+     * researcher)
+     * 
+     * @param context
+     * @param IDDB
+     * @return type node
+     */
+    private String readNodeLabel(Context context, String IDDB) {
+        AuthenticationDriver auth_driver = getAuthDriver();
+        String label = null;
+        Map<String, Object> record_map = new HashMap<String, Object>();
+        try (Session session = auth_driver.getBoltDriver().getDriver().session()) {
+            StringBuilder query = new StringBuilder();
+            query.append("MATCH (node{IDDB:$x}) RETURN labels(node)");
+            String final_query = query.toString();
+            Result result = session.run(final_query, Values.parameters("x", IDDB));
+            for (Record record : result.list()) {
+                record_map = record.asMap();
+                for (String s : record_map.keySet()) {
+                    List<Object> labels_list = (List<Object>) record_map.get(s);
+                    switch (record_map.get(s).getClass().toString()) {
+                        case "class java.util.Collections$UnmodifiableRandomAccessList":
+                        case "class java.util.Collections$SingletonList":
+                            label = (String) labels_list.get(0);
+                            break;
+                        default:
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+        }
+        return label;
     }
 
     /**

@@ -827,4 +827,37 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         assertNull(result3_id_res1.getMetadata().get("dc_surname"));
     }
 
+    /**
+     * Test 16: readNodeById with all the data
+     * 
+     */
+    @Test
+    public void readNodeByIdWithAllDataTest() {
+        neo4jService.deleteGraph(context);
+        DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, null);
+        DSpaceNode publication_2 = new DSpaceNode("Publication", "102", metadata_pub2, null);
+        DSpaceNode publication_3 = new DSpaceNode("Publication", "103", metadata_pub3, null);
+        DSpaceRelation rel_res1_pub1 = new DSpaceRelation("coauthor", publication_1, metadata_rel1);
+        DSpaceRelation rel_res1_pub2 = new DSpaceRelation("coauthor", publication_2, metadata_rel2);
+        DSpaceRelation rel_res1_pub3 = new DSpaceRelation("cooperation", publication_3, metadata_rel3);
+        List<DSpaceRelation> relations_res1 = new ArrayList<DSpaceRelation>();
+        relations_res1.add(rel_res1_pub1);
+        relations_res1.add(rel_res1_pub2);
+        relations_res1.add(rel_res1_pub3);
+        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, relations_res1);
+        neo4jService.createUpdateNode(context, researcher_1);
+
+        DSpaceNode readResearcher1 = neo4jService.readNodeById(context, researcher_1.getIDDB());
+        assertEquals("Researcher", readResearcher1.getEntityType());
+        assertEquals("1", readResearcher1.getIDDB());
+        assertEquals("[Steve]", readResearcher1.getMetadata().get("dc_name").toString());
+        assertEquals("[Smith]", readResearcher1.getMetadata().get("dc_surname").toString());
+        assertEquals("[Oxford University, Roma Tre]", readResearcher1.getMetadata().get("dc_department").toString());
+        assertEquals(publication_1, readResearcher1.getRelations().get(0).getTarget());
+        assertEquals(publication_2, readResearcher1.getRelations().get(1).getTarget());
+        assertEquals(publication_3, readResearcher1.getRelations().get(2).getTarget());
+        
+
+    }
+
 }
