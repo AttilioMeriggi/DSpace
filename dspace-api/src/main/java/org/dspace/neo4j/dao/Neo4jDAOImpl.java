@@ -262,10 +262,11 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                                 break;
                             default:
                         }
-                        currNode.setEntityType(entityType);
-                        currNode.setIDDB(ID);
-                        currNode.setMetadata(currMetadata);
                     }
+                    currNode.setEntityType(entityType);
+                    currNode.setIDDB(ID);
+                    currNode.setMetadata(currMetadata);
+
                 }
                 final_map.put(currNode.getIDDB(), currNode);
             }
@@ -284,11 +285,40 @@ public class Neo4jDAOImpl implements Neo4jDAO {
     /**
      * Read node by IDDB
      * 
-     * @param dsnode
+     * @param context
+     * @param IDDB
      * @return node map with all properties or EmptyMap
      */
     @Override
     public DSpaceNode readNodeById(Context context, String IDDB) {
+        return readNodeById(context, IDDB, 1, null);
+    }
+
+    /**
+     * Read node by IDDB
+     * 
+     * @param context
+     * @param IDDB
+     * @param depth
+     * @return node map with all properties or EmptyMap
+     */
+    @Override
+    public DSpaceNode readNodeById(Context context, String IDDB, int depth) {
+        return readNodeById(context, IDDB, depth, null);
+    }
+
+    /**
+     * Read node by IDDB
+     * 
+     * @param context
+     * @param IDDB
+     * @param depth
+     * @return node map with all properties or EmptyMap
+     */
+    private DSpaceNode readNodeById(Context context, String IDDB, int depth, List<String> IDDBFather) {
+        if (depth <= 0)
+            return null;
+
         AuthenticationDriver auth_driver = getAuthDriver();
         DSpaceNode readNode = null;
         Map<String, Object> record_map = new HashMap<String, Object>();
@@ -312,6 +342,7 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                         switch (o.get(s2).getClass().toString()) {
                             case "class java.lang.String":
                                 ID = (String) o.get(s2);
+                                readNode.setIDDB(ID);
                                 break;
                             case "class java.util.Collections$UnmodifiableRandomAccessList":
                             case "class java.util.Collections$SingletonList":
@@ -320,11 +351,24 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                                 break;
                             default:
                         }
-                        readNode.setEntityType(readNodeLabel(context, ID));
-                        readNode.setIDDB(ID);
-                        readNode.setMetadata(currMetadata);
-                        readNode.setRelations(readNodeRelationships(context, ID));
                     }
+                    readNode.setEntityType(readNodeLabel(context, ID));
+                    readNode.setIDDB(ID);
+                    readNode.setMetadata(currMetadata);
+                    readNode.setRelations(readNodeRelationships(context, ID, IDDBFather));
+                    if (readNode.getRelations() != null && readNode.getRelations().size() > 0) {
+                        for (DSpaceRelation rel : readNode.getRelations()) {
+
+                            IDDBFather = new ArrayList<String>();
+                            IDDBFather.add(IDDB);
+                            DSpaceNode node = readNodeById(context, rel.getTarget().getIDDB(), depth - 1, IDDBFather);
+                            if (node != null) {
+                                rel.setTarget(node);
+                            }
+
+                        }
+                    }
+
                 }
             }
         } catch (Exception e) {
@@ -339,9 +383,10 @@ public class Neo4jDAOImpl implements Neo4jDAO {
      * 
      * @param context
      * @param IDDB
+     * @param skipIDDB
      * @return list of relationships
      */
-    private List<DSpaceRelation> readNodeRelationships(Context context, String IDDB) {
+    private List<DSpaceRelation> readNodeRelationships(Context context, String IDDB, List<String> skipIDDB) {
         Map<String, DSpaceNode> relatedNodes = readNodesByDepth(context, IDDB, 1);
         List<DSpaceRelation> relations = new ArrayList<DSpaceRelation>();
         for (String s : relatedNodes.keySet()) {
@@ -350,7 +395,10 @@ public class Neo4jDAOImpl implements Neo4jDAO {
             currRelation.setTarget(relatedNodes.get(s));
             relatedNodes.get(s).setEntityType(readNodeLabel(context, relatedNodes.get(s).getIDDB()));
             currRelation.setMetadata(readPropertiesRel(context, IDDB, relatedNodes.get(s).getIDDB()).getMetadata());
-            relations.add(currRelation);
+
+            if (skipIDDB == null || !skipIDDB.contains(s)) {
+                relations.add(currRelation);
+            }
         }
         return relations;
     }
@@ -456,8 +504,9 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                                 break;
                             default:
                         }
-                        final_rel.setMetadata(currMetadata);
                     }
+                    final_rel.setMetadata(currMetadata);
+
                 }
             }
         } catch (Exception e) {
@@ -509,9 +558,10 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                                 break;
                             default:
                         }
-                        currNode.setIDDB(ID);
-                        currNode.setMetadata(currMetadata);
                     }
+                    currNode.setIDDB(ID);
+                    currNode.setMetadata(currMetadata);
+
                 }
                 if (!currNode.getIDDB().equals(IDDB)) {
                     final_map.put(currNode.getIDDB(), currNode);

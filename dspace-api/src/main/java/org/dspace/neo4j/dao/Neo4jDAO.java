@@ -30,6 +30,8 @@ public interface Neo4jDAO {
 
     /* Method for reading node of a specific IDDB */
     public DSpaceNode readNodeById(Context context, String IDDB);
+    
+    public DSpaceNode readNodeById(Context context, String IDDB, int depth);
 
     /* Method for read relationship properties between two nodes */
     public DSpaceRelation readPropertiesRel(Context context, String IDDB1, String IDDB2);

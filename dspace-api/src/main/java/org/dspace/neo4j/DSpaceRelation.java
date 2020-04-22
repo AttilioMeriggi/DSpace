@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 public class DSpaceRelation {
-    String type;
-    Map<String, List<String>> metadata;
-    DSpaceNode target;
+    private String type;
+    private Map<String, List<String>> metadata;
+    private DSpaceNode target;
 
     public DSpaceRelation() {
     }

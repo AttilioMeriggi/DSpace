@@ -848,16 +848,78 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(context, researcher_1);
 
         DSpaceNode readResearcher1 = neo4jService.readNodeById(context, researcher_1.getIDDB());
+
         assertEquals("Researcher", readResearcher1.getEntityType());
         assertEquals("1", readResearcher1.getIDDB());
         assertEquals("[Steve]", readResearcher1.getMetadata().get("dc_name").toString());
         assertEquals("[Smith]", readResearcher1.getMetadata().get("dc_surname").toString());
         assertEquals("[Oxford University, Roma Tre]", readResearcher1.getMetadata().get("dc_department").toString());
+        assertEquals("coauthor", readResearcher1.getRelations().get(0).getType());
+        assertEquals("coauthor", readResearcher1.getRelations().get(1).getType());
+        assertEquals("cooperation", readResearcher1.getRelations().get(2).getType());
+        assertEquals("[13/01/2020]", readResearcher1.getRelations().get(0).getMetadata().get("rel_date").toString());
+        assertEquals("[Italy, Usa, Spain]",
+                readResearcher1.getRelations().get(0).getMetadata().get("rel_place").toString());
+        assertEquals("[20/01/2020]", readResearcher1.getRelations().get(1).getMetadata().get("rel_date").toString());
+        assertEquals("[Italy, Usa, Japan]",
+                readResearcher1.getRelations().get(1).getMetadata().get("rel_place").toString());
+        assertEquals("[24/07/2020]", readResearcher1.getRelations().get(2).getMetadata().get("rel_date").toString());
+        assertEquals("[Argentina]", readResearcher1.getRelations().get(2).getMetadata().get("rel_place").toString());
+
         assertEquals(publication_1, readResearcher1.getRelations().get(0).getTarget());
         assertEquals(publication_2, readResearcher1.getRelations().get(1).getTarget());
         assertEquals(publication_3, readResearcher1.getRelations().get(2).getTarget());
-        
+        assertEquals("Publication", readResearcher1.getRelations().get(0).getTarget().getEntityType());
+        assertEquals("Publication", readResearcher1.getRelations().get(1).getTarget().getEntityType());
+        assertEquals("Publication", readResearcher1.getRelations().get(2).getTarget().getEntityType());
+        assertEquals("101", readResearcher1.getRelations().get(0).getTarget().getIDDB());
+        assertEquals("102", readResearcher1.getRelations().get(1).getTarget().getIDDB());
+        assertEquals("103", readResearcher1.getRelations().get(2).getTarget().getIDDB());
 
+        assertEquals("[Web Research]",
+                readResearcher1.getRelations().get(0).getTarget().getMetadata().get("dc_title").toString());
+        assertEquals("[Magazine]",
+                readResearcher1.getRelations().get(0).getTarget().getMetadata().get("dc_type").toString());
+        assertEquals("[Software Research]",
+                readResearcher1.getRelations().get(1).getTarget().getMetadata().get("dc_title").toString());
+        assertEquals("[Item]",
+                readResearcher1.getRelations().get(1).getTarget().getMetadata().get("dc_type").toString());
+        assertEquals("[Cluster Analysis]",
+                readResearcher1.getRelations().get(2).getTarget().getMetadata().get("dc_title").toString());
+        assertEquals("[Item]",
+                readResearcher1.getRelations().get(2).getTarget().getMetadata().get("dc_type").toString());
+
+        assertNull(readResearcher1.getRelations().get(0).getTarget().getRelations());
+    }
+
+    /**
+     * Test 18: readNodeById with all the data
+     * 
+     */
+    @Test
+    public void readNodeByIdWithAllDataDepth2Test() {
+        neo4jService.deleteGraph(context);
+        DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, null);
+        DSpaceNode publication_2 = new DSpaceNode("Publication", "102", metadata_pub2, null);
+        DSpaceNode publication_3 = new DSpaceNode("Publication", "103", metadata_pub3, null);
+        DSpaceRelation rel_res1_pub1 = new DSpaceRelation("coauthor", publication_1, metadata_rel1);
+        DSpaceRelation rel_res1_pub2 = new DSpaceRelation("coauthor", publication_2, metadata_rel2);
+        DSpaceRelation rel_res1_pub3 = new DSpaceRelation("cooperation", publication_3, metadata_rel3);
+        List<DSpaceRelation> relations_res1 = new ArrayList<DSpaceRelation>();
+        relations_res1.add(rel_res1_pub1);
+        relations_res1.add(rel_res1_pub2);
+        relations_res1.add(rel_res1_pub3);
+        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, relations_res1);
+        neo4jService.createUpdateNode(context, researcher_1);
+        List<DSpaceRelation> relations_res2 = new ArrayList<DSpaceRelation>();
+        DSpaceRelation rel_pub1_res2 = new DSpaceRelation("cooperation", publication_1, metadata_rel3);
+        relations_res2.add(rel_pub1_res2);
+        DSpaceNode researcher2 = new DSpaceNode("researcher", "2", metadata_res2, relations_res2);
+        neo4jService.createUpdateNode(context, researcher2);
+
+        DSpaceNode readResearcher1 = neo4jService.readNodeById(context, researcher_1.getIDDB(), 2);
+        assertEquals(1, readResearcher1.getRelations().get(0).getTarget().getRelations().size());
+        assertEquals(researcher2, readResearcher1.getRelations().get(0).getTarget().getRelations().get(0).getTarget());
     }
 
 }

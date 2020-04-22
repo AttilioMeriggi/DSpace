@@ -17,10 +17,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DSpaceNode {
-    String entityType;
-    String IDDB;
-    Map<String, List<String>> metadata;
-    List<DSpaceRelation> relations;
+    private String entityType;
+    private String IDDB;
+    private Map<String, List<String>> metadata;
+    private List<DSpaceRelation> relations;
 
     public DSpaceNode() {
     }

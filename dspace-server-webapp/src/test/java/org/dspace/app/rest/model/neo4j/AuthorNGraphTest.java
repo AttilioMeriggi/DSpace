@@ -8,6 +8,8 @@
 package org.dspace.app.rest.model.neo4j;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import org.dspace.app.rest.neo4j.Neo4jRestIT;
 import org.dspace.app.rest.test.AbstractNeo4jIntegrationTest;
 import org.dspace.neo4j.AuthenticationDriver;
 import org.dspace.neo4j.DSpaceNode;
+import org.dspace.neo4j.DSpaceRelation;
 import org.dspace.neo4j.factory.Neo4jFactory;
 import org.dspace.neo4j.service.Neo4jService;
 import org.junit.Before;
@@ -29,12 +32,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
 
+    // TODO
     private static final Logger log = LogManager.getLogger(Neo4jRestIT.class);
     private Neo4jService neo4jService = Neo4jFactory.getInstance().getNeo4jService();
     private AuthenticationDriver authDriver = null;
-
-    private DSpaceNode generic_researcher;
-    private DSpaceNode generic_publication;
 
     private Map<String, List<String>> metadata_res1;
     private Map<String, List<String>> metadata_res2;
@@ -56,10 +57,6 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
 
             authDriver = new AuthenticationDriver(neo4j.boltURI().toString(), null, null);
             neo4jService.setAuthDriver(authDriver);
-
-            /* fill objects and metadata */
-            generic_researcher = new DSpaceNode("Researcher", "1");
-            generic_publication = new DSpaceNode("Publication", "101");
 
             /* Metadata researcher_1 IDDB = 1 */
             metadata_res1 = new HashMap<String, List<String>>();
@@ -163,14 +160,67 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
             log.error("Error during test initialization", ex);
         }
     }
-    
+
+    /**
+     * Convert jsonNode to AuthorNGraph
+     * 
+     * @throws JsonProcessingException
+     */
+
     @Test
     public void deserialize() throws JsonProcessingException {
         String jsonNode = "{id: \"190_0\", name: \"Pearl Jam\", children: [{"
                 + " id: \"306208_1\", name: \"Pearl Jam &amp; Cypress Hill\", data: {"
                 + " relation: \"<h4>Pearl Jam &amp; Cypress Hill</h4>\"}" + "  }]}";
-        
+
         AuthorNGraph authorNGraph = AuthorNGraph.build(jsonNode);
         assertEquals("check name", "Pearl Jam", authorNGraph.getName());
     }
+
+    /**
+     * Convert DspaceNode to AuthorNGraph
+     */
+    @Test
+    public void convertByDSpaceNodeToAuthorNGraphSingleResearcher() {
+        DSpaceNode researcher1 = new DSpaceNode("researcher", "1", metadata_res1, null);
+        neo4jService.createUpdateNode(context, researcher1);
+        DSpaceNode readRes1ById = neo4jService.readNodeById(context, researcher1.getIDDB());
+        AuthorNGraph authNGraph = AuthorNGraph.build(readRes1ById, null);
+
+        assertEquals("1", authNGraph.getId());
+        assertEquals("[Steve]", authNGraph.getName());
+        assertNull(authNGraph.getAuthorNGraphData());
+        assertNull(authNGraph.getChildren());
+
+    }
+
+    /**
+     * Create one publication written by two researcher
+     */
+    @Test
+    public void createCoauthorRelationship() {
+        DSpaceNode researcher1 = new DSpaceNode("researcher", "1", metadata_res1, null);
+        DSpaceNode researcher2 = new DSpaceNode("researcher", "2", metadata_res2, null);
+        List<DSpaceRelation> relationsPublication1 = new ArrayList<DSpaceRelation>();
+        DSpaceRelation rel1 = new DSpaceRelation("coauthor", researcher1, metadata_rel1);
+        DSpaceRelation rel2 = new DSpaceRelation("cooperation", researcher2, metadata_rel2);
+        relationsPublication1.add(rel1);
+        relationsPublication1.add(rel2);
+        DSpaceNode publication1 = new DSpaceNode("publication", "101", metadata_pub1, relationsPublication1);
+        neo4jService.createUpdateNode(context, publication1);
+
+        DSpaceNode readRes1ById = neo4jService.readNodeById(context, researcher1.getIDDB());
+
+        AuthorNGraph authorNGraph = AuthorNGraph.build(readRes1ById, readRes1ById.getRelations().get(0));
+
+        assertEquals("1", authorNGraph.getId());
+        assertEquals("[Steve]", authorNGraph.getName());
+        assertNotNull(authorNGraph.getAuthorNGraphData());
+        assertEquals(readRes1ById.getRelations().get(0).getType(), authorNGraph.getAuthorNGraphData().getRelation());
+        // TODO : failed
+        assertEquals(1, authorNGraph.getChildren().size());
+        assertEquals("[Claire]", authorNGraph.getChildren().get(0).getName());
+
+    }
+
 }

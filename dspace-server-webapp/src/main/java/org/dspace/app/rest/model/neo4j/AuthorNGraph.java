@@ -27,8 +27,8 @@ public class AuthorNGraph {
 
     public AuthorNGraph(DSpaceNode node, DSpaceRelation relation) {
         id = node.getIDDB();
-        name = // metadato dc.author
-                "";
+        //TODO : _
+        name = node.getMetadata().get("dc.contributor.author").toString();
 
         if (relation != null) {
             authorNGraphData = new AuthorNGraphData(relation);

@@ -145,6 +145,11 @@ public class Neo4jServiceImpl implements Neo4jService {
     public DSpaceNode readNodeById(Context context, String IDDB) {
         return neo4jDAO.readNodeById(context, IDDB);
     }
+    
+    @Override
+    public DSpaceNode readNodeById(Context context, String IDDB, int depth) {
+        return neo4jDAO.readNodeById(context, IDDB, depth);
+    }
 
     @Override
     public DSpaceRelation readPropertiesRel(Context context, String IDDB1, String IDDB2) {

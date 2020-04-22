@@ -37,6 +37,8 @@ public interface Neo4jService {
 
     /* Service Neo4j for reading node of a specific IDDB */
     public DSpaceNode readNodeById(Context context, String IDDB);
+    
+    public DSpaceNode readNodeById(Context context, String IDDB, int depth);
 
     /* Service to read relationship properties between two nodes */
     public DSpaceRelation readPropertiesRel(Context context, String IDDB1, String IDDB2);
