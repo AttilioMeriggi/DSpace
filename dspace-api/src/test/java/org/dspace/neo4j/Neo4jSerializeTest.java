@@ -26,9 +26,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 public class Neo4jSerializeTest extends AbstractUnitTest {
     private static final Logger log = LogManager.getLogger(Neo4jSerializeTest.class);
 
-    private DSpaceNode generic_researcher;
-    private DSpaceNode generic_publication;
-
     private Map<String, List<String>> metadata_res1;
     private Map<String, List<String>> metadata_res2;
     private Map<String, List<String>> metadata_res3;
@@ -44,46 +41,43 @@ public class Neo4jSerializeTest extends AbstractUnitTest {
     @Before
     public void setUp() throws Exception {
 
-        generic_researcher = new DSpaceNode("Researcher", "1");
-        generic_publication = new DSpaceNode("Publication", "101");
-
         /* Metadata researcher_1 IDDB = 1 */
         metadata_res1 = new HashMap<String, List<String>>();
         List<String> list1_res1 = new ArrayList<>();
-        list1_res1.add("Steve");
+        list1_res1.add("Steve Smith");
         List<String> list2_res1 = new ArrayList<>();
-        list2_res1.add("Smith");
+        list2_res1.add("Steve Smith");
         List<String> list3_res1 = new ArrayList<String>();
         list3_res1.add("Oxford University");
         list3_res1.add("Roma Tre");
-        metadata_res1.put("dc.name", list1_res1);
-        metadata_res1.put("dc.surname", list2_res1);
-        metadata_res1.put("dc.department", list3_res1);
+        metadata_res1.put("dc.contributor.author", list1_res1);
+        metadata_res1.put("dc.contributor.editor", list2_res1);
+        metadata_res1.put("dc.relation.orgunit", list3_res1);
 
         /* Metadata researcher_2 IDDB = 2 */
         metadata_res2 = new HashMap<String, List<String>>();
         List<String> list1_res2 = new ArrayList<>();
-        list1_res2.add("Claire");
+        list1_res2.add("Claire Williams");
         List<String> list2_res2 = new ArrayList<>();
-        list2_res2.add("Williams");
+        list2_res2.add("Claire Williams");
         List<String> list3_res2 = new ArrayList<String>();
         list3_res2.add("Bocconi");
         list3_res2.add("Sapienza");
-        metadata_res2.put("dc.name", list1_res2);
-        metadata_res2.put("dc.surname", list2_res2);
-        metadata_res2.put("dc.department", list3_res2);
+        metadata_res2.put("dc.contributor.author", list1_res2);
+        metadata_res2.put("dc.contributor.editor", list2_res2);
+        metadata_res2.put("dc.relation.orgunit", list3_res2);
 
         /* Metadata researcher_3 IDDB = 3 */
         metadata_res3 = new HashMap<String, List<String>>();
         List<String> list1_res3 = new ArrayList<>();
-        list1_res3.add("Tom");
+        list1_res3.add("Tom Taylor");
         List<String> list2_res3 = new ArrayList<>();
-        list2_res3.add("Taylor");
+        list2_res3.add("Tom Taylor");
         List<String> list3_res3 = new ArrayList<String>();
         list3_res3.add("Oxford University");
-        metadata_res3.put("dc.name", list1_res3);
-        metadata_res3.put("dc.surname", list2_res3);
-        metadata_res3.put("dc.department", list3_res3);
+        metadata_res3.put("dc.contributor.author", list1_res3);
+        metadata_res3.put("dc.contributor.editor", list2_res3);
+        metadata_res3.put("dc.relation.orgunit", list3_res3);
 
         /* Metadata publication_1 IDDB = 101 */
         metadata_pub1 = new HashMap<String, List<String>>();
@@ -120,8 +114,8 @@ public class Neo4jSerializeTest extends AbstractUnitTest {
         list2_rel1.add("Italy");
         list2_rel1.add("Usa");
         list2_rel1.add("Spain");
-        metadata_rel1.put("rel.date", list1_rel1);
-        metadata_rel1.put("rel.place", list2_rel1);
+        metadata_rel1.put("dc.date.issued", list1_rel1);
+        metadata_rel1.put("dc.coverage.spatial", list2_rel1);
 
         /* Metadata relationship_2 */
         metadata_rel2 = new HashMap<String, List<String>>();
@@ -131,8 +125,8 @@ public class Neo4jSerializeTest extends AbstractUnitTest {
         list2_rel2.add("Italy");
         list2_rel2.add("Usa");
         list2_rel2.add("Japan");
-        metadata_rel2.put("rel.date", list1_rel2);
-        metadata_rel2.put("rel.place", list2_rel2);
+        metadata_rel2.put("dc.date.issued", list1_rel2);
+        metadata_rel2.put("dc.coverage.spatial", list2_rel2);
 
         /* Metadata relationship_3 */
         metadata_rel3 = new HashMap<String, List<String>>();
@@ -140,12 +134,12 @@ public class Neo4jSerializeTest extends AbstractUnitTest {
         list1_rel3.add("24/07/2020");
         List<String> list2_rel3 = new ArrayList<>();
         list2_rel3.add("Argentina");
-        metadata_rel3.put("rel.date", list1_rel3);
-        metadata_rel3.put("rel.place", list2_rel3);
+        metadata_rel3.put("dc.date.issued", list1_rel3);
+        metadata_rel3.put("dc.coverage.spatial", list2_rel3);
     }
 
     /**
-     * Test 5: serialize a graph with three researcher nodes and one publication
+     * Test 1: serialize a graph with three researcher nodes and one publication
      * node and then delete it
      * 
      * @throws JsonProcessingException
@@ -166,26 +160,25 @@ public class Neo4jSerializeTest extends AbstractUnitTest {
 
         String jsonString = publication_1.toJson();
 
-        assertEquals("{\"entityType\":\"Publication\",\"metadata\":"
-                + "{\"dc.type\":[\"Magazine\"],\"dc.title\":[\"Web Research\"]},"
-                + "\"relations\":[{\"type\":\"coauthor\",\"metadata\":{\"rel.date\":[\"13/01/2020\"],"
-                + "\"rel.place\":[\"Italy\",\"Usa\",\"Spain\"]},"
-                + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":"
-                + "{\"dc.name\":[\"Steve\"],\"dc.surname\":[\"Smith\"],"
-                + "\"dc.department\":[\"Oxford University\",\"Roma Tre\"]},"
-                + "\"relations\":null,\"iddb\":\"1\"}},{\"type\":\"coauthor\",\"metadata\":"
-                + "{\"rel.date\":[\"20/01/2020\"],\"rel.place\":[\"Italy\",\"Usa\",\"Japan\"]},"
-                + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":{\"dc.name\":[\"Claire\"],"
-                + "\"dc.surname\":[\"Williams\"],\"dc.department\":[\"Bocconi\",\"Sapienza\"]},"
-                + "\"relations\":null,\"iddb\":\"2\"}},{\"type\":\"collaboration\",\"metadata\":"
-                + "{\"rel.date\":[\"24/07/2020\"],\"rel.place\":[\"Argentina\"]},"
-                + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":{\"dc.name\":[\"Tom\"],"
-                + "\"dc.surname\":[\"Taylor\"],\"dc.department\":[\"Oxford University\"]},"
-                + "\"relations\":null,\"iddb\":\"3\"}}],\"iddb\":\"101\"}", jsonString);
+        assertEquals(
+                "{\"entityType\":\"Publication\",\"metadata\":{\"dc.type\":[\"Magazine\"],\"dc.title\":[\"Web Research\"]}"
+                        + ",\"relations\":[{\"type\":\"coauthor\",\"metadata\":{\"dc.coverage.spatial\":[\"Italy\",\"Usa\",\"Spain\"],"
+                        + "\"dc.date.issued\":[\"13/01/2020\"]},\"target\":{\"entityType\":\"Researcher\","
+                        + "\"metadata\":{\"dc.contributor.author\":[\"Steve Smith\"],\"dc.contributor.editor\":[\"Steve Smith\"],"
+                        + "\"dc.relation.orgunit\":[\"Oxford University\",\"Roma Tre\"]},\"relations\":null,\"iddb\":\"1\"}},"
+                        + "{\"type\":\"coauthor\",\"metadata\":{\"dc.coverage.spatial\":[\"Italy\",\"Usa\",\"Japan\"],"
+                        + "\"dc.date.issued\":[\"20/01/2020\"]},\"target\":{\"entityType\":\"Researcher\",\"metadata\":"
+                        + "{\"dc.contributor.author\":[\"Claire Williams\"],\"dc.contributor.editor\":[\"Claire Williams\"],"
+                        + "\"dc.relation.orgunit\":[\"Bocconi\",\"Sapienza\"]},\"relations\":null,\"iddb\":\"2\"}},"
+                        + "{\"type\":\"collaboration\",\"metadata\":{\"dc.coverage.spatial\":[\"Argentina\"],\"dc.date.issued\""
+                        + ":[\"24/07/2020\"]},\"target\":{\"entityType\":\"Researcher\",\"metadata\":{\"dc.contributor.author\":[\"Tom Taylor\"],"
+                        + "\"dc.contributor.editor\":[\"Tom Taylor\"],\"dc.relation.orgunit\":[\"Oxford University\"]},"
+                        + "\"relations\":null,\"iddb\":\"3\"}}],\"iddb\":\"101\"}",
+                jsonString);
     }
 
     /**
-     * Test 5: deserialize a graph with three researcher nodes and one publication
+     * Test 2: deserialize a graph with three researcher nodes and one publication
      * node and then delete it
      * 
      * @throws JsonMappingException
@@ -195,19 +188,19 @@ public class Neo4jSerializeTest extends AbstractUnitTest {
     public void deserializeTest() throws JsonMappingException, JsonProcessingException {
         String jsonNodeString = "{\"entityType\":\"Publication\",\"metadata\":"
                 + "{\"dc.type\":[\"Magazine\"],\"dc.title\":[\"Web Research\"]},"
-                + "\"relations\":[{\"type\":\"coauthor\",\"metadata\":{\"rel.date\":[\"13/01/2020\"],"
-                + "\"rel.place\":[\"Italy\",\"Usa\",\"Spain\"]},"
+                + "\"relations\":[{\"type\":\"coauthor\",\"metadata\":{\"dc.date.issued\":[\"13/01/2020\"],"
+                + "\"dc.coverage.spatial\":[\"Italy\",\"Usa\",\"Spain\"]},"
                 + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":"
-                + "{\"dc.name\":[\"Steve\"],\"dc.surname\":[\"Smith\"],"
-                + "\"dc.department\":[\"Oxford University\",\"Roma Tre\"]},"
+                + "{\"dc.contributor.author\":[\"Steve Smith\"],\"dc.contributor.editor\":[\"Steve Smith\"],"
+                + "\"dc.relation.orgunit\":[\"Oxford University\",\"Roma Tre\"]},"
                 + "\"relations\":null,\"iddb\":\"1\"}},{\"type\":\"coauthor\",\"metadata\":"
-                + "{\"rel.date\":[\"20/01/2020\"],\"rel.place\":[\"Italy\",\"Usa\",\"Japan\"]},"
-                + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":{\"dc.name\":[\"Claire\"],"
-                + "\"dc.surname\":[\"Williams\"],\"dc.department\":[\"Bocconi\",\"Sapienza\"]},"
+                + "{\"dc.date.issued\":[\"20/01/2020\"],\"dc.coverage.spatial\":[\"Italy\",\"Usa\",\"Japan\"]},"
+                + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":{\"dc.contributor.author\":[\"Claire Williams\"],"
+                + "\"dc.contributor.editor\":[\"Claire Williams\"],\"dc.relation.orgunit\":[\"Bocconi\",\"Sapienza\"]},"
                 + "\"relations\":null,\"iddb\":\"2\"}},{\"type\":\"collaboration\",\"metadata\":"
-                + "{\"rel.date\":[\"24/07/2020\"],\"rel.place\":[\"Argentina\"]},"
-                + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":{\"dc.name\":[\"Tom\"],"
-                + "\"dc.surname\":[\"Taylor\"],\"dc.department\":[\"Oxford University\"]},"
+                + "{\"dc.date.issued\":[\"24/07/2020\"],\"dc.coverage.spatial\":[\"Argentina\"]},"
+                + "\"target\":{\"entityType\":\"Researcher\",\"metadata\":{\"dc.contributor.author\":[\"Tom Taylor\"],"
+                + "\"dc.contributor.editor\":[\"Tom Taylor\"],\"dc.relation.orgunit\":[\"Oxford University\"]},"
                 + "\"relations\":null,\"iddb\":\"3\"}}],\"iddb\":\"101\"}";
 
         DSpaceNode publication_1 = DSpaceNode.build(jsonNodeString);

@@ -238,7 +238,7 @@ public class ConvertItemTest extends AbstractNeo4jTest {
 
     /**
      * 
-     * Create Items without relationship between them
+     * Create items without relationship between them
      * 
      * @throws IOException
      */

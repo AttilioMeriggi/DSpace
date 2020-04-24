@@ -11,10 +11,16 @@ import org.neo4j.driver.Driver;
 
 public interface DriverConnector {
 
-    /* Return driver instance */
+    /**
+     * get driver instance
+     * 
+     * @return driver instance
+     */
     public Driver getDriver();
 
-    /* Close driver instance */
+    /**
+     * Close driver instance
+     */
     public void close();
 
 }

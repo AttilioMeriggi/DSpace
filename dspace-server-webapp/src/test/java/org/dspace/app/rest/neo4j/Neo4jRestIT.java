@@ -40,9 +40,6 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
     private Neo4jService neo4jService = Neo4jFactory.getInstance().getNeo4jService();
     private AuthenticationDriver authDriver = null;
 
-    private DSpaceNode generic_researcher;
-    private DSpaceNode generic_publication;
-
     private Map<String, List<String>> metadata_res1;
     private Map<String, List<String>> metadata_res2;
     private Map<String, List<String>> metadata_res3;
@@ -64,47 +61,43 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
             authDriver = new AuthenticationDriver(neo4j.boltURI().toString(), null, null);
             neo4jService.setAuthDriver(authDriver);
 
-            /* fill objects and metadata */
-            generic_researcher = new DSpaceNode("Researcher", "1");
-            generic_publication = new DSpaceNode("Publication", "101");
-
             /* Metadata researcher_1 IDDB = 1 */
             metadata_res1 = new HashMap<String, List<String>>();
             List<String> list1_res1 = new ArrayList<>();
-            list1_res1.add("Steve");
+            list1_res1.add("Steve Smith");
             List<String> list2_res1 = new ArrayList<>();
-            list2_res1.add("Smith");
+            list2_res1.add("Steve Smith");
             List<String> list3_res1 = new ArrayList<String>();
             list3_res1.add("Oxford University");
             list3_res1.add("Roma Tre");
-            metadata_res1.put("dc.name", list1_res1);
-            metadata_res1.put("dc.surname", list2_res1);
-            metadata_res1.put("dc.department", list3_res1);
+            metadata_res1.put("dc.contributor.author", list1_res1);
+            metadata_res1.put("dc.contributor.editor", list2_res1);
+            metadata_res1.put("dc.relation.orgunit", list3_res1);
 
             /* Metadata researcher_2 IDDB = 2 */
             metadata_res2 = new HashMap<String, List<String>>();
             List<String> list1_res2 = new ArrayList<>();
-            list1_res2.add("Claire");
+            list1_res2.add("Claire Williams");
             List<String> list2_res2 = new ArrayList<>();
-            list2_res2.add("Williams");
+            list2_res2.add("Claire Williams");
             List<String> list3_res2 = new ArrayList<String>();
             list3_res2.add("Bocconi");
             list3_res2.add("Sapienza");
-            metadata_res2.put("dc.name", list1_res2);
-            metadata_res2.put("dc.surname", list2_res2);
-            metadata_res2.put("dc.department", list3_res2);
+            metadata_res2.put("dc.contributor.author", list1_res2);
+            metadata_res2.put("dc.contributor.editor", list2_res2);
+            metadata_res2.put("dc.relation.orgunit", list3_res2);
 
             /* Metadata researcher_3 IDDB = 3 */
             metadata_res3 = new HashMap<String, List<String>>();
             List<String> list1_res3 = new ArrayList<>();
-            list1_res3.add("Tom");
+            list1_res3.add("Tom Taylor");
             List<String> list2_res3 = new ArrayList<>();
-            list2_res3.add("Taylor");
+            list2_res3.add("Tom Taylor");
             List<String> list3_res3 = new ArrayList<String>();
             list3_res3.add("Oxford University");
-            metadata_res3.put("dc.name", list1_res3);
-            metadata_res3.put("dc.surname", list2_res3);
-            metadata_res3.put("dc.department", list3_res3);
+            metadata_res3.put("dc.contributor.author", list1_res3);
+            metadata_res3.put("dc.contributor.editor", list2_res3);
+            metadata_res3.put("dc.relation.orgunit", list3_res3);
 
             /* Metadata publication_1 IDDB = 101 */
             metadata_pub1 = new HashMap<String, List<String>>();
@@ -141,8 +134,8 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
             list2_rel1.add("Italy");
             list2_rel1.add("Usa");
             list2_rel1.add("Spain");
-            metadata_rel1.put("rel.date", list1_rel1);
-            metadata_rel1.put("rel.place", list2_rel1);
+            metadata_rel1.put("dc.date.issued", list1_rel1);
+            metadata_rel1.put("dc.coverage.spatial", list2_rel1);
 
             /* Metadata relationship_2 */
             metadata_rel2 = new HashMap<String, List<String>>();
@@ -152,8 +145,8 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
             list2_rel2.add("Italy");
             list2_rel2.add("Usa");
             list2_rel2.add("Japan");
-            metadata_rel2.put("rel.date", list1_rel2);
-            metadata_rel2.put("rel.place", list2_rel2);
+            metadata_rel2.put("dc.date.issued", list1_rel2);
+            metadata_rel2.put("dc.coverage.spatial", list2_rel2);
 
             /* Metadata relationship_3 */
             metadata_rel3 = new HashMap<String, List<String>>();
@@ -161,8 +154,8 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
             list1_rel3.add("24/07/2020");
             List<String> list2_rel3 = new ArrayList<>();
             list2_rel3.add("Argentina");
-            metadata_rel3.put("rel.date", list1_rel3);
-            metadata_rel3.put("rel.place", list2_rel3);
+            metadata_rel3.put("dc.date.issued", list1_rel3);
+            metadata_rel3.put("dc.coverage.spatial", list2_rel3);
 
             /* clean up neo4j */
             neo4jService.deleteGraph(context);

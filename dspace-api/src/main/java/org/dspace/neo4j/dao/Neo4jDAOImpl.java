@@ -221,12 +221,6 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         }
     }
 
-    /**
-     * Read nodes of a type with all properties
-     * 
-     * @param dsnode
-     * @return list maps properties nodes or EmptyList
-     */
     @Override
     public Map<String, DSpaceNode> readNodesByType(Context context, String entityType) {
         AuthenticationDriver auth_driver = getAuthDriver();
@@ -282,39 +276,16 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         return final_map;
     }
 
-    /**
-     * Read node by IDDB
-     * 
-     * @param context
-     * @param IDDB
-     * @return node map with all properties or EmptyMap
-     */
     @Override
     public DSpaceNode readNodeById(Context context, String IDDB) {
         return readNodeById(context, IDDB, 1, null);
     }
 
-    /**
-     * Read node by IDDB
-     * 
-     * @param context
-     * @param IDDB
-     * @param depth
-     * @return node map with all properties or EmptyMap
-     */
     @Override
     public DSpaceNode readNodeById(Context context, String IDDB, int depth) {
         return readNodeById(context, IDDB, depth, null);
     }
 
-    /**
-     * Read node by IDDB
-     * 
-     * @param context
-     * @param IDDB
-     * @param depth
-     * @return node map with all properties or EmptyMap
-     */
     private DSpaceNode readNodeById(Context context, String IDDB, int depth, List<String> IDDBFather) {
         if (depth <= 0)
             return null;
@@ -378,14 +349,6 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         return readNode;
     }
 
-    /**
-     * Read all node relationships and related data
-     * 
-     * @param context
-     * @param IDDB
-     * @param skipIDDB
-     * @return list of relationships
-     */
     private List<DSpaceRelation> readNodeRelationships(Context context, String IDDB, List<String> skipIDDB) {
         Map<String, DSpaceNode> relatedNodes = readNodesByDepth(context, IDDB, 1);
         List<DSpaceRelation> relations = new ArrayList<DSpaceRelation>();
@@ -403,14 +366,6 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         return relations;
     }
 
-    /**
-     * reads the type of the relationship between two nodes
-     * 
-     * @param context
-     * @param IDDB1
-     * @param IDDB2
-     * @return relationship type
-     */
     private String readTypeRelationships(Context context, String IDDB1, String IDDB2) {
         AuthenticationDriver auth_driver = getAuthDriver();
         String relationType = null;
@@ -433,14 +388,6 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         return relationType;
     }
 
-    /**
-     * reads all node labels, in our case we only have one (publication or
-     * researcher)
-     * 
-     * @param context
-     * @param IDDB
-     * @return type node
-     */
     private String readNodeLabel(Context context, String IDDB) {
         AuthenticationDriver auth_driver = getAuthDriver();
         String label = null;
@@ -471,10 +418,6 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         return label;
     }
 
-    /**
-     * Read properties relationship between two nodes
-     * 
-     */
     @Override
     public DSpaceRelation readPropertiesRel(Context context, String IDDB1, String IDDB2) {
         AuthenticationDriver auth_driver = getAuthDriver();
@@ -516,13 +459,6 @@ public class Neo4jDAOImpl implements Neo4jDAO {
         return final_rel;
     }
 
-    /**
-     * Read nodes by depth with all properties (including start node)
-     * 
-     * @param dsnode
-     * @param depth
-     * @return list maps properties node or EmptyList
-     */
     @Override
     public Map<String, DSpaceNode> readNodesByDepth(Context context, String IDDB, int depth) {
         AuthenticationDriver auth_driver = getAuthDriver();

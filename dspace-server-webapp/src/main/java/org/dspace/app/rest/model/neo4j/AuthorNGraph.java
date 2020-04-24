@@ -7,6 +7,7 @@
  */
 package org.dspace.app.rest.model.neo4j;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.dspace.neo4j.DSpaceNode;
@@ -20,28 +21,33 @@ public class AuthorNGraph {
     private String id;
     private String name;
     private AuthorNGraphData authorNGraphData;
-    private List<AuthorNGraph> children;
+    private List<AuthorNGraph> children = new ArrayList<AuthorNGraph>();
 
     public AuthorNGraph() {
     }
 
-    public AuthorNGraph(DSpaceNode node, DSpaceRelation relation) {
+    public AuthorNGraph(DSpaceNode node, DSpaceRelation relation, String metadata, List<String> relationMetadata) {
         id = node.getIDDB();
-        //TODO : _
-        name = node.getMetadata().get("dc.contributor.author").toString();
+        name = "";
+        if (node.getMetadata() != null) {
+            List<String> names = node.getMetadata().get(metadata);
+            if (names != null) {
+                name = names.toString();
+            }
+        }
 
         if (relation != null) {
-            authorNGraphData = new AuthorNGraphData(relation);
+            authorNGraphData = new AuthorNGraphData(relation, relationMetadata);
         }
     }
 
-    public void addChildren(DSpaceRelation relation) {
+    public void addChildren(DSpaceRelation relation, String metadata, List<String> relationMetadata) {
         if (relation.getTarget() != null) {
             // children...
             DSpaceNode target = relation.getTarget();
             if (target.getRelations() != null && target.getRelations().size() > 0) {
                 for (DSpaceRelation inner : target.getRelations()) {
-                    children.add(AuthorNGraph.build(inner.getTarget(), relation));
+                    children.add(AuthorNGraph.build(inner.getTarget(), relation, metadata, relationMetadata));
                 }
             }
         }
@@ -115,20 +121,38 @@ public class AuthorNGraph {
      * 
      * The start the call give the dspaceNode and null as relation.
      * 
-     * @param node The DSpaceNode object.
+     * @param node     The DSpaceNode object.
+     * @param metadata Metadata used to fill the name
      * @return The AuthorNGraph object
      * @throws JsonProcessingException
      */
-    static public AuthorNGraph build(DSpaceNode node, DSpaceRelation relation) {
+    static public AuthorNGraph build(DSpaceNode node, String metadata, List<String> relationMetadata) {
+        return build(node, null, metadata, relationMetadata);
+    }
+
+    /***
+     * Create a AuthorNGraph from a DSpaceNode.
+     * 
+     * In inner recursion node is a target node and relation is the one that is used
+     * to reach the target node.
+     * 
+     * The start the call give the dspaceNode and null as relation.
+     * 
+     * @param node     The DSpaceNode object.
+     * @param metadata Metadata used to fill the name
+     * @return The AuthorNGraph object
+     * @throws JsonProcessingException
+     */
+    static private AuthorNGraph build(DSpaceNode node, DSpaceRelation relation, String metadata, List<String> relationMetadata) {
         AuthorNGraph authorNGraph = null;
 
         if (node.getRelations() == null || node.getRelations().isEmpty()) {
-            authorNGraph = new AuthorNGraph(node, relation);
+            authorNGraph = new AuthorNGraph(node, relation, metadata, relationMetadata);
         } else {
-            authorNGraph = new AuthorNGraph(node, relation);
+            authorNGraph = new AuthorNGraph(node, relation, metadata, relationMetadata);
 
             for (DSpaceRelation r : node.getRelations()) {
-                authorNGraph.addChildren(r);
+                authorNGraph.addChildren(r, metadata, relationMetadata);
             }
         }
         return authorNGraph;

@@ -10,6 +10,12 @@ package org.dspace.neo4j;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class representing the relation object of neo4j
+ * 
+ * @author a.meriggi
+ *
+ */
 public class DSpaceRelation {
     private String type;
     private Map<String, List<String>> metadata;

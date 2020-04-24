@@ -67,40 +67,40 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         /* Metadata researcher_1 IDDB = 1 */
         metadata_res1 = new HashMap<String, List<String>>();
         List<String> list1_res1 = new ArrayList<>();
-        list1_res1.add("Steve");
+        list1_res1.add("Steve Smith");
         List<String> list2_res1 = new ArrayList<>();
-        list2_res1.add("Smith");
+        list2_res1.add("Steve Smith");
         List<String> list3_res1 = new ArrayList<String>();
         list3_res1.add("Oxford University");
         list3_res1.add("Roma Tre");
-        metadata_res1.put("dc.name", list1_res1);
-        metadata_res1.put("dc.surname", list2_res1);
-        metadata_res1.put("dc.department", list3_res1);
+        metadata_res1.put("dc.contributor.author", list1_res1);
+        metadata_res1.put("dc.contributor.editor", list2_res1);
+        metadata_res1.put("dc.relation.orgunit", list3_res1);
 
         /* Metadata researcher_2 IDDB = 2 */
         metadata_res2 = new HashMap<String, List<String>>();
         List<String> list1_res2 = new ArrayList<>();
-        list1_res2.add("Claire");
+        list1_res2.add("Claire Williams");
         List<String> list2_res2 = new ArrayList<>();
-        list2_res2.add("Williams");
+        list2_res2.add("Claire Williams");
         List<String> list3_res2 = new ArrayList<String>();
         list3_res2.add("Bocconi");
         list3_res2.add("Sapienza");
-        metadata_res2.put("dc.name", list1_res2);
-        metadata_res2.put("dc.surname", list2_res2);
-        metadata_res2.put("dc.department", list3_res2);
+        metadata_res2.put("dc.contributor.author", list1_res2);
+        metadata_res2.put("dc.contributor.editor", list2_res2);
+        metadata_res2.put("dc.relation.orgunit", list3_res2);
 
         /* Metadata researcher_3 IDDB = 3 */
         metadata_res3 = new HashMap<String, List<String>>();
         List<String> list1_res3 = new ArrayList<>();
-        list1_res3.add("Tom");
+        list1_res3.add("Tom Taylor");
         List<String> list2_res3 = new ArrayList<>();
-        list2_res3.add("Taylor");
+        list2_res3.add("Tom Taylor");
         List<String> list3_res3 = new ArrayList<String>();
         list3_res3.add("Oxford University");
-        metadata_res3.put("dc.name", list1_res3);
-        metadata_res3.put("dc.surname", list2_res3);
-        metadata_res3.put("dc.department", list3_res3);
+        metadata_res3.put("dc.contributor.author", list1_res3);
+        metadata_res3.put("dc.contributor.editor", list2_res3);
+        metadata_res3.put("dc.relation.orgunit", list3_res3);
 
         /* Metadata publication_1 IDDB = 101 */
         metadata_pub1 = new HashMap<String, List<String>>();
@@ -137,8 +137,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         list2_rel1.add("Italy");
         list2_rel1.add("Usa");
         list2_rel1.add("Spain");
-        metadata_rel1.put("rel.date", list1_rel1);
-        metadata_rel1.put("rel.place", list2_rel1);
+        metadata_rel1.put("dc.date.issued", list1_rel1);
+        metadata_rel1.put("dc.coverage.spatial", list2_rel1);
 
         /* Metadata relationship_2 */
         metadata_rel2 = new HashMap<String, List<String>>();
@@ -148,8 +148,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         list2_rel2.add("Italy");
         list2_rel2.add("Usa");
         list2_rel2.add("Japan");
-        metadata_rel2.put("rel.date", list1_rel2);
-        metadata_rel2.put("rel.place", list2_rel2);
+        metadata_rel2.put("dc.date.issued", list1_rel2);
+        metadata_rel2.put("dc.coverage.spatial", list2_rel2);
 
         /* Metadata relationship_3 */
         metadata_rel3 = new HashMap<String, List<String>>();
@@ -157,8 +157,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         list1_rel3.add("24/07/2020");
         List<String> list2_rel3 = new ArrayList<>();
         list2_rel3.add("Argentina");
-        metadata_rel3.put("rel.date", list1_rel3);
-        metadata_rel3.put("rel.place", list2_rel3);
+        metadata_rel3.put("dc.date.issued", list1_rel3);
+        metadata_rel3.put("dc.coverage.spatial", list2_rel3);
 
     }
 
@@ -476,7 +476,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
                 pre_edit.getMetadata().toString());
 
         /* Change researcher_1 surname */
-        researcher_1.getMetadata().get("dc.surname").set(0, "Brown");
+        researcher_1.getMetadata().get("dc.contributor.editor").set(0, "Brown");
         neo4jService.createUpdateNode(context, researcher_1);
 
         /* Post-edit metadata */
@@ -487,7 +487,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
                 post_edit1.getMetadata().toString());
 
         /* Change another metadata researcher_1 department index 1 */
-        researcher_1.getMetadata().get("dc.department").set(1, "Harvard");
+        researcher_1.getMetadata().get("dc.relation.orgunit").set(1, "Harvard");
         neo4jService.createUpdateNode(context, researcher_1);
         /* Post-edit metadata */
         DSpaceNode post_edit2 = neo4jService.readNodeById(context, generic_researcher.getIDDB());
@@ -820,7 +820,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         assertEquals("1", result1_id_res1.getIDDB());
         assertEquals("[Smith]", result1_id_res1.getMetadata().get("dc_surname").toString());
 
-        researcher_1.getMetadata().get("dc.surname").clear();
+        researcher_1.getMetadata().get("dc.contributor.editor").clear();
 
         neo4jService.createUpdateNode(context, researcher_1);
         DSpaceNode result3_id_res1 = neo4jService.readNodeById(context, generic_researcher.getIDDB());

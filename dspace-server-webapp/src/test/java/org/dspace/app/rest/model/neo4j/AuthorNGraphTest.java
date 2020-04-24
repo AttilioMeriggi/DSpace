@@ -10,6 +10,7 @@ package org.dspace.app.rest.model.neo4j;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +19,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dspace.app.rest.neo4j.Neo4jRestIT;
 import org.dspace.app.rest.test.AbstractNeo4jIntegrationTest;
 import org.dspace.neo4j.AuthenticationDriver;
 import org.dspace.neo4j.DSpaceNode;
@@ -33,7 +33,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
 
     // TODO
-    private static final Logger log = LogManager.getLogger(Neo4jRestIT.class);
+    private static final Logger log = LogManager.getLogger(AuthorNGraphTest.class);
     private Neo4jService neo4jService = Neo4jFactory.getInstance().getNeo4jService();
     private AuthenticationDriver authDriver = null;
 
@@ -61,40 +61,40 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
             /* Metadata researcher_1 IDDB = 1 */
             metadata_res1 = new HashMap<String, List<String>>();
             List<String> list1_res1 = new ArrayList<>();
-            list1_res1.add("Steve");
+            list1_res1.add("Steve Smith");
             List<String> list2_res1 = new ArrayList<>();
-            list2_res1.add("Smith");
+            list2_res1.add("Steve Smith");
             List<String> list3_res1 = new ArrayList<String>();
             list3_res1.add("Oxford University");
             list3_res1.add("Roma Tre");
-            metadata_res1.put("dc.name", list1_res1);
-            metadata_res1.put("dc.surname", list2_res1);
-            metadata_res1.put("dc.department", list3_res1);
+            metadata_res1.put("dc.contributor.author", list1_res1);
+            metadata_res1.put("dc.contributor.editor", list2_res1);
+            metadata_res1.put("dc.relation.orgunit", list3_res1);
 
             /* Metadata researcher_2 IDDB = 2 */
             metadata_res2 = new HashMap<String, List<String>>();
             List<String> list1_res2 = new ArrayList<>();
-            list1_res2.add("Claire");
+            list1_res2.add("Claire Williams");
             List<String> list2_res2 = new ArrayList<>();
-            list2_res2.add("Williams");
+            list2_res2.add("Claire Williams");
             List<String> list3_res2 = new ArrayList<String>();
             list3_res2.add("Bocconi");
             list3_res2.add("Sapienza");
-            metadata_res2.put("dc.name", list1_res2);
-            metadata_res2.put("dc.surname", list2_res2);
-            metadata_res2.put("dc.department", list3_res2);
+            metadata_res2.put("dc.contributor.author", list1_res2);
+            metadata_res2.put("dc.contributor.editor", list2_res2);
+            metadata_res2.put("dc.relation.orgunit", list3_res2);
 
             /* Metadata researcher_3 IDDB = 3 */
             metadata_res3 = new HashMap<String, List<String>>();
             List<String> list1_res3 = new ArrayList<>();
-            list1_res3.add("Tom");
+            list1_res3.add("Tom Taylor");
             List<String> list2_res3 = new ArrayList<>();
-            list2_res3.add("Taylor");
+            list2_res3.add("Tom Taylor");
             List<String> list3_res3 = new ArrayList<String>();
             list3_res3.add("Oxford University");
-            metadata_res3.put("dc.name", list1_res3);
-            metadata_res3.put("dc.surname", list2_res3);
-            metadata_res3.put("dc.department", list3_res3);
+            metadata_res3.put("dc.contributor.author", list1_res3);
+            metadata_res3.put("dc.contributor.editor", list2_res3);
+            metadata_res3.put("dc.relation.orgunit", list3_res3);
 
             /* Metadata publication_1 IDDB = 101 */
             metadata_pub1 = new HashMap<String, List<String>>();
@@ -131,8 +131,8 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
             list2_rel1.add("Italy");
             list2_rel1.add("Usa");
             list2_rel1.add("Spain");
-            metadata_rel1.put("rel.date", list1_rel1);
-            metadata_rel1.put("rel.place", list2_rel1);
+            metadata_rel1.put("dc.date.issued", list1_rel1);
+            metadata_rel1.put("dc.coverage.spatial", list2_rel1);
 
             /* Metadata relationship_2 */
             metadata_rel2 = new HashMap<String, List<String>>();
@@ -142,8 +142,8 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
             list2_rel2.add("Italy");
             list2_rel2.add("Usa");
             list2_rel2.add("Japan");
-            metadata_rel2.put("rel.date", list1_rel2);
-            metadata_rel2.put("rel.place", list2_rel2);
+            metadata_rel2.put("dc.date.issued", list1_rel2);
+            metadata_rel2.put("dc.coverage.spatial", list2_rel2);
 
             /* Metadata relationship_3 */
             metadata_rel3 = new HashMap<String, List<String>>();
@@ -151,8 +151,8 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
             list1_rel3.add("24/07/2020");
             List<String> list2_rel3 = new ArrayList<>();
             list2_rel3.add("Argentina");
-            metadata_rel3.put("rel.date", list1_rel3);
-            metadata_rel3.put("rel.place", list2_rel3);
+            metadata_rel3.put("dc.date.issued", list1_rel3);
+            metadata_rel3.put("dc.coverage.spatial", list2_rel3);
 
             /* clean up neo4j */
             neo4jService.deleteGraph(context);
@@ -166,12 +166,11 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
      * 
      * @throws JsonProcessingException
      */
-
     @Test
     public void deserialize() throws JsonProcessingException {
-        String jsonNode = "{id: \"190_0\", name: \"Pearl Jam\", children: [{"
-                + " id: \"306208_1\", name: \"Pearl Jam &amp; Cypress Hill\", data: {"
-                + " relation: \"<h4>Pearl Jam &amp; Cypress Hill</h4>\"}" + "  }]}";
+        String jsonNode = "{\"id\": \"190_0\", \"name\": \"Pearl Jam\", \"children\": [{"
+                + " \"id\": \"306208_1\", \"name\": \"Pearl Jam &amp; Cypress Hill\", \"authorNGraphData\": {"
+                + " \"relation\": \"<h4>Pearl Jam &amp; Cypress Hill</h4>\"}" + "  }]}";
 
         AuthorNGraph authorNGraph = AuthorNGraph.build(jsonNode);
         assertEquals("check name", "Pearl Jam", authorNGraph.getName());
@@ -185,13 +184,16 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
         DSpaceNode researcher1 = new DSpaceNode("researcher", "1", metadata_res1, null);
         neo4jService.createUpdateNode(context, researcher1);
         DSpaceNode readRes1ById = neo4jService.readNodeById(context, researcher1.getIDDB());
-        AuthorNGraph authNGraph = AuthorNGraph.build(readRes1ById, null);
+
+        List<String> relationMetadata = new ArrayList<String>();
+        relationMetadata.add("dc_title");
+        relationMetadata.add("dc_type");
+        AuthorNGraph authNGraph = AuthorNGraph.build(readRes1ById, "dc_contributor_author", relationMetadata);
 
         assertEquals("1", authNGraph.getId());
-        assertEquals("[Steve]", authNGraph.getName());
+        assertEquals("[Steve Smith]", authNGraph.getName());
         assertNull(authNGraph.getAuthorNGraphData());
-        assertNull(authNGraph.getChildren());
-
+        assertTrue(authNGraph.getChildren().size() == 0);
     }
 
     /**
@@ -209,18 +211,21 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
         DSpaceNode publication1 = new DSpaceNode("publication", "101", metadata_pub1, relationsPublication1);
         neo4jService.createUpdateNode(context, publication1);
 
-        DSpaceNode readRes1ById = neo4jService.readNodeById(context, researcher1.getIDDB());
+        DSpaceNode readRes1ById = neo4jService.readNodeById(context, researcher1.getIDDB(), 2);
 
-        AuthorNGraph authorNGraph = AuthorNGraph.build(readRes1ById, readRes1ById.getRelations().get(0));
+        List<String> relationMetadata = new ArrayList<String>();
+        relationMetadata.add("dc_date_issued");
+        relationMetadata.add("dc_coverage_spatial");
+        AuthorNGraph authorNGraph = AuthorNGraph.build(readRes1ById, "dc_contributor_author", relationMetadata);
 
         assertEquals("1", authorNGraph.getId());
-        assertEquals("[Steve]", authorNGraph.getName());
-        assertNotNull(authorNGraph.getAuthorNGraphData());
-        assertEquals(readRes1ById.getRelations().get(0).getType(), authorNGraph.getAuthorNGraphData().getRelation());
-        // TODO : failed
-        assertEquals(1, authorNGraph.getChildren().size());
-        assertEquals("[Claire]", authorNGraph.getChildren().get(0).getName());
-
+        assertEquals("[Steve Smith]", authorNGraph.getName());
+        assertNull(authorNGraph.getAuthorNGraphData());
+        assertTrue(authorNGraph.getChildren() != null && authorNGraph.getChildren().size() == 1);
+        assertNotNull(authorNGraph.getChildren().get(0).getAuthorNGraphData());
+        assertEquals("dc_date_issued:[13/01/2020], dc_coverage_spatial:[Italy, Usa, Spain]",
+                authorNGraph.getChildren().get(0).getAuthorNGraphData().getRelation());
+        assertEquals("[Claire Williams]", authorNGraph.getChildren().get(0).getName());
     }
 
 }
