@@ -40,14 +40,17 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
     private Map<String, List<String>> metadata_res1;
     private Map<String, List<String>> metadata_res2;
     private Map<String, List<String>> metadata_res3;
+    private Map<String, List<String>> metadata_res4;
 
     private Map<String, List<String>> metadata_pub1;
     private Map<String, List<String>> metadata_pub2;
     private Map<String, List<String>> metadata_pub3;
+    private Map<String, List<String>> metadata_pub4;
 
     private Map<String, List<String>> metadata_rel1;
     private Map<String, List<String>> metadata_rel2;
     private Map<String, List<String>> metadata_rel3;
+    private Map<String, List<String>> metadata_rel4;
 
     @Override
     @Before
@@ -96,6 +99,18 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
             metadata_res3.put("dc.contributor.editor", list2_res3);
             metadata_res3.put("dc.relation.orgunit", list3_res3);
 
+            /* Metadata researcher_4 IDDB = 4 */
+            metadata_res4 = new HashMap<String, List<String>>();
+            List<String> list1_res4 = new ArrayList<>();
+            list1_res4.add("Daniel Brown");
+            List<String> list2_res4 = new ArrayList<>();
+            list2_res4.add("Richard King");
+            List<String> list3_res4 = new ArrayList<String>();
+            list3_res4.add("Berkeley University");
+            metadata_res4.put("dc.contributor.author", list1_res4);
+            metadata_res4.put("dc.contributor.editor", list2_res4);
+            metadata_res4.put("dc.relation.orgunit", list3_res4);
+
             /* Metadata publication_1 IDDB = 101 */
             metadata_pub1 = new HashMap<String, List<String>>();
             List<String> list1_pub1 = new ArrayList<>();
@@ -122,6 +137,15 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
             list2_pub3.add("Item");
             metadata_pub3.put("dc.title", list1_pub3);
             metadata_pub3.put("dc.type", list2_pub3);
+
+            /* Metadata publication_4 IDDB = 104 */
+            metadata_pub4 = new HashMap<String, List<String>>();
+            List<String> list1_pub4 = new ArrayList<>();
+            list1_pub4.add("Microeconomics");
+            List<String> list2_pub4 = new ArrayList<>();
+            list2_pub4.add("Item");
+            metadata_pub4.put("dc.title", list1_pub4);
+            metadata_pub4.put("dc.type", list2_pub4);
 
             /* Metadata relationship_1 */
             metadata_rel1 = new HashMap<String, List<String>>();
@@ -153,6 +177,16 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
             list2_rel3.add("Argentina");
             metadata_rel3.put("dc.date.issued", list1_rel3);
             metadata_rel3.put("dc.coverage.spatial", list2_rel3);
+
+            /* Metadata relationship_4 */
+            metadata_rel4 = new HashMap<String, List<String>>();
+            List<String> list1_rel4 = new ArrayList<>();
+            list1_rel4.add("28/01/2020");
+            List<String> list2_rel4 = new ArrayList<>();
+            list2_rel4.add("Canada");
+            list2_rel4.add("Usa");
+            metadata_rel4.put("dc.date.issued", list1_rel4);
+            metadata_rel4.put("dc.coverage.spatial", list2_rel4);
 
             /* clean up neo4j */
             neo4jService.deleteGraph(context);
@@ -226,6 +260,71 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
         assertEquals("dc_date_issued:[13/01/2020], dc_coverage_spatial:[Italy, Usa, Spain]",
                 authorNGraph.getChildren().get(0).getAuthorNGraphData().getRelation());
         assertEquals("[Claire Williams]", authorNGraph.getChildren().get(0).getName());
+    }
+
+    /**
+     * 
+     * 
+     */
+    @Test
+    public void ReadGraph4Researcher4Publication() {
+        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, null);
+        DSpaceNode researcher_2 = new DSpaceNode("Researcher", "2", metadata_res2, null);
+        DSpaceNode researcher_3 = new DSpaceNode("Researcher", "3", metadata_res3, null);
+
+        DSpaceRelation rel1_pub1 = new DSpaceRelation("coauthor", researcher_1, metadata_rel1);
+        DSpaceRelation rel2_pub1 = new DSpaceRelation("coauthor", researcher_2, metadata_rel2);
+        DSpaceRelation rel3_pub1 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        List<DSpaceRelation> relations_pub1 = new ArrayList<DSpaceRelation>();
+        relations_pub1.add(rel1_pub1);
+        relations_pub1.add(rel2_pub1);
+        relations_pub1.add(rel3_pub1);
+        DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, relations_pub1);
+        neo4jService.createUpdateNode(context, publication_1);
+
+        DSpaceRelation rel1_pub2 = new DSpaceRelation("coauthor", researcher_1, metadata_rel1);
+        DSpaceRelation rel2_pub2 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        List<DSpaceRelation> relations_pub2 = new ArrayList<DSpaceRelation>();
+        relations_pub2.add(rel1_pub2);
+        relations_pub2.add(rel2_pub2);
+        DSpaceNode publication_2 = new DSpaceNode("Publication", "102", metadata_pub2, relations_pub2);
+        neo4jService.createUpdateNode(context, publication_2);
+
+        DSpaceRelation rel1_pub3 = new DSpaceRelation("coauthor", researcher_1, metadata_rel1);
+        DSpaceRelation rel2_pub3 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        List<DSpaceRelation> relations_pub3 = new ArrayList<DSpaceRelation>();
+        relations_pub3.add(rel1_pub3);
+        relations_pub3.add(rel2_pub3);
+        DSpaceNode publication_3 = new DSpaceNode("Publication", "103", metadata_pub3, relations_pub3);
+        neo4jService.createUpdateNode(context, publication_3);
+
+        DSpaceRelation rel1_pub4 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        List<DSpaceRelation> relations_pub4 = new ArrayList<DSpaceRelation>();
+        relations_pub4.add(rel1_pub4);
+        DSpaceNode publication_4 = new DSpaceNode("Publication", "104", metadata_pub4, relations_pub4);
+        neo4jService.createUpdateNode(context, publication_4);
+
+        DSpaceRelation rel1_res4 = new DSpaceRelation("coauthor", publication_4, metadata_rel4);
+        List<DSpaceRelation> relations_res4 = new ArrayList<DSpaceRelation>();
+        relations_res4.add(rel1_res4);
+        DSpaceNode researcher_4 = new DSpaceNode("Researcher", "4", metadata_res4, relations_res4);
+        neo4jService.createUpdateNode(context, researcher_4);
+
+        // Read depth = 2
+        DSpaceNode readFromRes1ById = neo4jService.readNodeById(context, researcher_1.getIDDB(), 2);
+        List<String> relationMetadata = new ArrayList<String>();
+        relationMetadata.add("dc_date_issued");
+        relationMetadata.add("dc_coverage_spatial");
+        AuthorNGraph authorNGraph = AuthorNGraph.build(readFromRes1ById, "dc_contributor_author", relationMetadata);
+
+        assertEquals("1", authorNGraph.getId());
+        assertEquals("[Steve Smith]", authorNGraph.getName());
+        // assertEquals(2, authorNGraph.getChildren().size());
+        assertEquals("", authorNGraph.getChildren().toString());
+        assertTrue(authorNGraph.getChildren() != null && authorNGraph.getChildren().size() == 2);
+        assertEquals("[Claire Williams]", authorNGraph.getChildren().get(0).getName());
+        assertEquals("[Tom Taylor]", authorNGraph.getChildren().get(0).getName());
+
     }
 
 }

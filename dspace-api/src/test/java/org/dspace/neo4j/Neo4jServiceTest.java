@@ -441,7 +441,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode pre_edit = neo4jService.readNodeById(context, generic_researcher.getIDDB());
         assertNotNull(pre_edit);
         assertEquals("1", pre_edit.getIDDB());
-        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Smith]}",
+        assertEquals(
+                "{dc_contributor_author=[Steve Smith], dc_contributor_editor=[Steve Smith], dc_relation_orgunit=[Oxford University, Roma Tre]}",
                 pre_edit.getMetadata().toString());
 
         DSpaceNode not_exist = neo4jService.readNodeById(context, generic_publication.getIDDB());
@@ -454,7 +455,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode post_edit = neo4jService.readNodeById(context, generic_researcher.getIDDB());
         assertNotNull(post_edit);
         assertEquals("1", post_edit.getIDDB());
-        assertEquals("{dc_name=[Claire], dc_department=[Bocconi, Sapienza], dc_surname=[Williams]}",
+        assertEquals(
+                "{dc_contributor_author=[Claire Williams], dc_contributor_editor=[Claire Williams], dc_relation_orgunit=[Bocconi, Sapienza]}",
                 post_edit.getMetadata().toString());
     }
 
@@ -472,18 +474,20 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode pre_edit = neo4jService.readNodeById(context, generic_researcher.getIDDB());
         assertNotNull(pre_edit);
         assertEquals("1", pre_edit.getIDDB());
-        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Smith]}",
+        assertEquals(
+                "{dc_contributor_author=[Steve Smith], dc_contributor_editor=[Steve Smith], dc_relation_orgunit=[Oxford University, Roma Tre]}",
                 pre_edit.getMetadata().toString());
 
         /* Change researcher_1 surname */
-        researcher_1.getMetadata().get("dc.contributor.editor").set(0, "Brown");
+        researcher_1.getMetadata().get("dc.contributor.editor").set(0, "Daniel Brown");
         neo4jService.createUpdateNode(context, researcher_1);
 
         /* Post-edit metadata */
         DSpaceNode post_edit1 = neo4jService.readNodeById(context, generic_researcher.getIDDB());
         assertNotNull(post_edit1);
         assertEquals("1", post_edit1.getIDDB());
-        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Brown]}",
+        assertEquals(
+                "{dc_contributor_author=[Steve Smith], dc_contributor_editor=[Daniel Brown], dc_relation_orgunit=[Oxford University, Roma Tre]}",
                 post_edit1.getMetadata().toString());
 
         /* Change another metadata researcher_1 department index 1 */
@@ -493,7 +497,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         DSpaceNode post_edit2 = neo4jService.readNodeById(context, generic_researcher.getIDDB());
         assertNotNull(post_edit2);
         assertEquals("1", post_edit2.getIDDB());
-        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Harvard], dc_surname=[Brown]}",
+        assertEquals(
+                "{dc_contributor_author=[Steve Smith], dc_contributor_editor=[Daniel Brown], dc_relation_orgunit=[Oxford University, Harvard]}",
                 post_edit2.getMetadata().toString());
     }
 
@@ -520,7 +525,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
 
         DSpaceRelation result_properties = neo4jService.readPropertiesRel(context, generic_researcher.getIDDB(),
                 generic_publication.getIDDB());
-        assertEquals("{rel_date=[13/01/2020], rel_place=[Italy, Usa, Spain]}",
+        assertEquals("{dc_date_issued=[13/01/2020], dc_coverage_spatial=[Italy, Usa, Spain]}",
                 result_properties.getMetadata().toString());
     }
 
@@ -588,7 +593,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         assertNotNull(result_id_res1);
         assertNotNull(result_id_pub1);
         assertEquals("1", result_id_res1.getIDDB());
-        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Smith]}",
+        assertEquals(
+                "{dc_contributor_author=[Steve Smith], dc_contributor_editor=[Steve Smith], dc_relation_orgunit=[Oxford University, Roma Tre]}",
                 result_id_res1.getMetadata().toString());
         assertEquals("101", result_id_pub1.getIDDB());
         assertEquals("{dc_title=[Web Research], dc_type=[Magazine]}", result_id_pub1.getMetadata().toString());
@@ -795,7 +801,8 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(context, researcher_1);
         DSpaceNode result2_id_res1 = neo4jService.readNodeById(context, generic_researcher.getIDDB());
         assertEquals("1", result2_id_res1.getIDDB());
-        assertEquals("{dc_name=[Steve], dc_department=[Oxford University, Roma Tre], dc_surname=[Smith]}",
+        assertEquals(
+                "{dc_contributor_author=[Steve Smith], dc_contributor_editor=[Steve Smith], dc_relation_orgunit=[Oxford University, Roma Tre]}",
                 result2_id_res1.getMetadata().toString());
 
         researcher_1.setMetadata(null);
@@ -818,13 +825,13 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         neo4jService.createUpdateNode(context, researcher_1);
         DSpaceNode result1_id_res1 = neo4jService.readNodeById(context, generic_researcher.getIDDB());
         assertEquals("1", result1_id_res1.getIDDB());
-        assertEquals("[Smith]", result1_id_res1.getMetadata().get("dc_surname").toString());
+        assertEquals("[Steve Smith]", result1_id_res1.getMetadata().get("dc_contributor_editor").toString());
 
         researcher_1.getMetadata().get("dc.contributor.editor").clear();
 
         neo4jService.createUpdateNode(context, researcher_1);
         DSpaceNode result3_id_res1 = neo4jService.readNodeById(context, generic_researcher.getIDDB());
-        assertNull(result3_id_res1.getMetadata().get("dc_surname"));
+        assertNull(result3_id_res1.getMetadata().get("dc_contributor_editor"));
     }
 
     /**
@@ -851,20 +858,25 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
 
         assertEquals("Researcher", readResearcher1.getEntityType());
         assertEquals("1", readResearcher1.getIDDB());
-        assertEquals("[Steve]", readResearcher1.getMetadata().get("dc_name").toString());
-        assertEquals("[Smith]", readResearcher1.getMetadata().get("dc_surname").toString());
-        assertEquals("[Oxford University, Roma Tre]", readResearcher1.getMetadata().get("dc_department").toString());
+        assertEquals("[Steve Smith]", readResearcher1.getMetadata().get("dc_contributor_author").toString());
+        assertEquals("[Steve Smith]", readResearcher1.getMetadata().get("dc_contributor_editor").toString());
+        assertEquals("[Oxford University, Roma Tre]",
+                readResearcher1.getMetadata().get("dc_relation_orgunit").toString());
         assertEquals("coauthor", readResearcher1.getRelations().get(0).getType());
         assertEquals("coauthor", readResearcher1.getRelations().get(1).getType());
         assertEquals("cooperation", readResearcher1.getRelations().get(2).getType());
-        assertEquals("[13/01/2020]", readResearcher1.getRelations().get(0).getMetadata().get("rel_date").toString());
+        assertEquals("[13/01/2020]",
+                readResearcher1.getRelations().get(0).getMetadata().get("dc_date_issued").toString());
         assertEquals("[Italy, Usa, Spain]",
-                readResearcher1.getRelations().get(0).getMetadata().get("rel_place").toString());
-        assertEquals("[20/01/2020]", readResearcher1.getRelations().get(1).getMetadata().get("rel_date").toString());
+                readResearcher1.getRelations().get(0).getMetadata().get("dc_coverage_spatial").toString());
+        assertEquals("[20/01/2020]",
+                readResearcher1.getRelations().get(1).getMetadata().get("dc_date_issued").toString());
         assertEquals("[Italy, Usa, Japan]",
-                readResearcher1.getRelations().get(1).getMetadata().get("rel_place").toString());
-        assertEquals("[24/07/2020]", readResearcher1.getRelations().get(2).getMetadata().get("rel_date").toString());
-        assertEquals("[Argentina]", readResearcher1.getRelations().get(2).getMetadata().get("rel_place").toString());
+                readResearcher1.getRelations().get(1).getMetadata().get("dc_coverage_spatial").toString());
+        assertEquals("[24/07/2020]",
+                readResearcher1.getRelations().get(2).getMetadata().get("dc_date_issued").toString());
+        assertEquals("[Argentina]",
+                readResearcher1.getRelations().get(2).getMetadata().get("dc_coverage_spatial").toString());
 
         assertEquals(publication_1, readResearcher1.getRelations().get(0).getTarget());
         assertEquals(publication_2, readResearcher1.getRelations().get(1).getTarget());
@@ -893,7 +905,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
     }
 
     /**
-     * Test 18: readNodeById with all the data
+     * Test 17: readNodeById with all the data
      * 
      */
     @Test
