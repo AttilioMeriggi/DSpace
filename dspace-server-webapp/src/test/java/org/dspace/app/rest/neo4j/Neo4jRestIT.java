@@ -289,7 +289,6 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
         DSpaceNode researcher_4 = new DSpaceNode("Researcher", "4", metadata_res4, relations_res4);
         neo4jService.createUpdateNode(context, researcher_4);
 
-        // Read depth = 2
         MvcResult result = getClient()
                 .perform(get("/api/app/neo4j/authorngraph/" + researcher_1.getIDDB()).param("depth", "5")
                         .param("metadata", "dc_contributor_author")
@@ -300,12 +299,15 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
 
         assertEquals("1", authorNGraph.getId());
         assertEquals("[Steve Smith]", authorNGraph.getName());
-        // assertEquals(2, authorNGraph.getChildren().size());
-        assertEquals("", authorNGraph.getChildren().toString());
-        assertTrue(authorNGraph.getChildren() != null && authorNGraph.getChildren().size() == 2);
-        assertEquals("[Claire Williams]", authorNGraph.getChildren().get(0).getName());
-        assertEquals("[Tom Taylor]", authorNGraph.getChildren().get(0).getName());
 
+        assertEquals(4, authorNGraph.getChildren().size());
+        assertEquals("[Claire Williams]", authorNGraph.getChildren().get(0).getName());
+        assertEquals("[Tom Taylor]", authorNGraph.getChildren().get(1).getName());
+
+        assertEquals(0, authorNGraph.getChildren().get(0).getChildren().size());
+        assertEquals(1, authorNGraph.getChildren().get(1).getChildren().size());
+
+        assertEquals("[Daniel Brown]", authorNGraph.getChildren().get(1).getChildren().get(0).getName());
     }
 
 }

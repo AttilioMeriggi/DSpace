@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class AuthorNGraph {
     private String id;
     private String name;
-    private AuthorNGraphData authorNGraphData;
+    private AuthorNGraphData data;
     private List<AuthorNGraph> children = new ArrayList<AuthorNGraph>();
 
     public AuthorNGraph() {
@@ -37,7 +37,10 @@ public class AuthorNGraph {
         }
 
         if (relation != null) {
-            authorNGraphData = new AuthorNGraphData(relation, relationMetadata);
+            data = new AuthorNGraphData(relation, relationMetadata);
+        } else {
+            data = new AuthorNGraphData();
+            data.setRelation("");
         }
     }
 
@@ -47,7 +50,20 @@ public class AuthorNGraph {
             DSpaceNode target = relation.getTarget();
             if (target.getRelations() != null && target.getRelations().size() > 0) {
                 for (DSpaceRelation inner : target.getRelations()) {
-                    children.add(AuthorNGraph.build(inner.getTarget(), relation, metadata, relationMetadata));
+                    AuthorNGraph c = AuthorNGraph.build(inner.getTarget(), relation, metadata, relationMetadata);
+
+                    boolean found = false;
+                    for (AuthorNGraph authorNG : getChildren()) {
+                        if (authorNG.getId().equals(c.getId())) {
+                            found = true;
+
+                            authorNG.merge(c, true);
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        getChildren().add(c);
+                    }
                 }
             }
         }
@@ -69,12 +85,12 @@ public class AuthorNGraph {
         this.name = name;
     }
 
-    public AuthorNGraphData getAuthorNGraphData() {
-        return authorNGraphData;
+    public AuthorNGraphData getData() {
+        return data;
     }
 
-    public void setAuthorNGraphData(AuthorNGraphData authorNGraphData) {
-        this.authorNGraphData = authorNGraphData;
+    public void setData(AuthorNGraphData authorNGraphData) {
+        this.data = authorNGraphData;
     }
 
     public List<AuthorNGraph> getChildren() {
@@ -83,6 +99,35 @@ public class AuthorNGraph {
 
     public void setChildren(List<AuthorNGraph> children) {
         this.children = children;
+    }
+
+    public void merge(AuthorNGraph authorNG, boolean mergeRelation) {
+        if (mergeRelation) {
+            getData().addRelation(authorNG.getData());
+        }
+        
+        for (AuthorNGraph children : getChildren()) {
+            for (AuthorNGraph seek : authorNG.getChildren()) {
+                if (seek.getId().equals(children.getId())) {
+                    children.merge(seek, false);
+                    break;
+                }
+            }
+        }
+        
+        for (AuthorNGraph seek : authorNG.getChildren()) {
+            boolean found = false;
+            for (AuthorNGraph children : getChildren()) {
+                if (seek.getId().equals(children.getId())) {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                children.add(seek);
+            }
+        }
     }
 
     /***

@@ -13,14 +13,12 @@ import java.util.Map;
 import org.dspace.neo4j.DSpaceRelation;
 
 public class AuthorNGraphData {
-    private String relation;
+    private String relation = "";
 
     public AuthorNGraphData() {
     }
     
     public AuthorNGraphData(DSpaceRelation rel, List<String> metadata) {
-        relation = "";
-        
         if (rel.getMetadata() != null && rel.getMetadata().size() > 0) {
             for (Map.Entry<String, List<String>> ml : rel.getMetadata().entrySet()) {
                 if (metadata.contains(ml.getKey()) && ml.getValue() != null && ml.getValue().size() > 0) {
@@ -39,5 +37,9 @@ public class AuthorNGraphData {
 
     public void setRelation(String relation) {
         this.relation = relation;
+    }
+    
+    public void addRelation(AuthorNGraphData d) {
+        relation += ";" + d.getRelation();
     }
 }
