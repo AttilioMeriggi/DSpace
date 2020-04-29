@@ -121,8 +121,9 @@ public class AuthorNGraph {
      * 
      * The start the call give the dspaceNode and null as relation.
      * 
-     * @param node     The DSpaceNode object.
-     * @param metadata Metadata used to fill the name
+     * @param node             The DSpaceNode object.
+     * @param metadata         Metadata used to fill the name
+     * @param relationMetadata The metadata used to fill the relation
      * @return The AuthorNGraph object
      * @throws JsonProcessingException
      */
@@ -143,7 +144,8 @@ public class AuthorNGraph {
      * @return The AuthorNGraph object
      * @throws JsonProcessingException
      */
-    static private AuthorNGraph build(DSpaceNode node, DSpaceRelation relation, String metadata, List<String> relationMetadata) {
+    static private AuthorNGraph build(DSpaceNode node, DSpaceRelation relation, String metadata,
+            List<String> relationMetadata) {
         AuthorNGraph authorNGraph = null;
 
         if (node.getRelations() == null || node.getRelations().isEmpty()) {
