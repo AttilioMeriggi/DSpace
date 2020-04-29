@@ -329,10 +329,12 @@ public class Neo4jDAOImpl implements Neo4jDAO {
                     readNode.setRelations(readNodeRelationships(context, ID, IDDBFather));
                     if (readNode.getRelations() != null && readNode.getRelations().size() > 0) {
                         for (DSpaceRelation rel : readNode.getRelations()) {
-
-                            IDDBFather = new ArrayList<String>();
-                            IDDBFather.add(IDDB);
-                            DSpaceNode node = readNodeById(context, rel.getTarget().getIDDB(), depth - 1, IDDBFather);
+                            List<String> IDDBList = new ArrayList<String>();
+                            if (IDDBFather != null) {
+                                IDDBList.addAll(IDDBFather);
+                            }
+                            IDDBList.add(IDDB);
+                            DSpaceNode node = readNodeById(context, rel.getTarget().getIDDB(), depth - 1, IDDBList);
                             if (node != null) {
                                 rel.setTarget(node);
                             }

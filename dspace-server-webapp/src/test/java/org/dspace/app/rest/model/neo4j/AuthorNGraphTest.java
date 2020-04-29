@@ -263,7 +263,7 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
     }
 
     /**
-     * 
+     * read graph composed of 4 researcher nodes and 4 publication node
      * 
      */
     @Test
@@ -311,7 +311,7 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
         neo4jService.createUpdateNode(context, researcher_4);
 
         // Read depth = 2
-        DSpaceNode readFromRes1ById = neo4jService.readNodeById(context, researcher_1.getIDDB(), 2);
+        DSpaceNode readFromRes1ById = neo4jService.readNodeById(context, researcher_1.getIDDB(), 5);
         List<String> relationMetadata = new ArrayList<String>();
         relationMetadata.add("dc_date_issued");
         relationMetadata.add("dc_coverage_spatial");
@@ -319,11 +319,21 @@ public class AuthorNGraphTest extends AbstractNeo4jIntegrationTest {
 
         assertEquals("1", authorNGraph.getId());
         assertEquals("[Steve Smith]", authorNGraph.getName());
-        // assertEquals(2, authorNGraph.getChildren().size());
-        assertEquals("", authorNGraph.getChildren().toString());
-        assertTrue(authorNGraph.getChildren() != null && authorNGraph.getChildren().size() == 2);
+
+        assertEquals(4, authorNGraph.getChildren().size());
         assertEquals("[Claire Williams]", authorNGraph.getChildren().get(0).getName());
-        assertEquals("[Tom Taylor]", authorNGraph.getChildren().get(0).getName());
+        assertEquals("[Tom Taylor]", authorNGraph.getChildren().get(1).getName());
+        assertEquals("[Tom Taylor]", authorNGraph.getChildren().get(2).getName());
+        assertEquals("[Tom Taylor]", authorNGraph.getChildren().get(3).getName());
+
+        assertEquals(0, authorNGraph.getChildren().get(0).getChildren().size());
+        assertEquals(1, authorNGraph.getChildren().get(1).getChildren().size());
+        assertEquals(1, authorNGraph.getChildren().get(2).getChildren().size());
+        assertEquals(1, authorNGraph.getChildren().get(3).getChildren().size());
+
+        assertEquals("[Daniel Brown]", authorNGraph.getChildren().get(1).getChildren().get(0).getName());
+        assertEquals("[Daniel Brown]", authorNGraph.getChildren().get(2).getChildren().get(0).getName());
+        assertEquals("[Daniel Brown]", authorNGraph.getChildren().get(3).getChildren().get(0).getName());
 
     }
 
