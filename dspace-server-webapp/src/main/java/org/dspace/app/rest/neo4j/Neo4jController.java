@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.dspace.app.rest.exception.UnprocessableEntityException;
 import org.dspace.app.rest.model.Neo4jRest;
+import org.dspace.app.rest.model.neo4j.AuthorNGraph;
 import org.dspace.app.rest.neo4j.repository.Neo4jRepository;
 import org.dspace.app.rest.utils.ContextUtil;
 import org.dspace.authorize.AuthorizeException;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,7 +44,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Neo4jController {
 
     @Autowired
-    Neo4jRepository neo4jRepository;
+    private Neo4jRepository neo4jRepository;
 
     /***
      * Insert a DSpaceNode.
@@ -76,10 +78,34 @@ public class Neo4jController {
      */
     @RequestMapping(method = RequestMethod.GET, value = "/dspacenode/{iddb}")
     @PreAuthorize("hasAuthority('AUTHENTICATED')")
-    public DSpaceNode readNodeById(HttpServletRequest request, @PathVariable("iddb") String iddb) throws AuthorizeException {
+    public DSpaceNode readNodeById(HttpServletRequest request, @PathVariable("iddb") String iddb)
+            throws AuthorizeException {
 
         Context context = ContextUtil.obtainContext(request);
 
         return neo4jRepository.readNodeById(context, iddb);
+    }
+
+    /***
+     * Return an AuthorNGraph.
+     * 
+     * @param request          The request
+     * @param iddb             The key
+     * @param depth            The depth of the graph
+     * @param metadata         The Metadata used to fill the name
+     * @param relationMetadata The metadata used to fill the relation
+     * @return The DSpaceNode
+     * @throws AuthorizeException
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/authorngraph/{iddb}")
+    public AuthorNGraph authorNGraph(HttpServletRequest request, @PathVariable("iddb") String iddb,
+            @RequestParam(value = "depth", required = true) int depth,
+            @RequestParam(value = "metadata", required = true) String metadata,
+            @RequestParam(value = "relationMetadata", required = true) String relationMetadata)
+            throws AuthorizeException {
+
+        Context context = ContextUtil.obtainContext(request);
+
+        return neo4jRepository.authorNGraph(context, iddb, depth, metadata, relationMetadata);
     }
 }

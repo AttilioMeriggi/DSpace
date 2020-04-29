@@ -7,7 +7,10 @@
  */
 package org.dspace.app.rest.neo4j.repository;
 
+import java.util.Arrays;
+
 import org.dspace.app.rest.model.Neo4jRest;
+import org.dspace.app.rest.model.neo4j.AuthorNGraph;
 import org.dspace.core.Context;
 import org.dspace.neo4j.DSpaceNode;
 import org.dspace.neo4j.service.Neo4jService;
@@ -44,5 +47,24 @@ public class Neo4jRepository {
         DSpaceNode dspaceNode = neo4jService.readNodeById(context, iddb);
 
         return dspaceNode;
+    }
+
+    /***
+     * 
+     * @param context          The context
+     * @param iddb             The key
+     * @param depth            The depth of the graph
+     * @param metadata         The Metadata used to fill the name
+     * @param relationMetadata The metadata used to fill the relation
+     * @return
+     */
+    public AuthorNGraph authorNGraph(Context context, String iddb, int depth, String metadata,
+            String relationMetadata) {
+        DSpaceNode readFromRes1ById = neo4jService.readNodeById(context, iddb, depth);
+
+        AuthorNGraph authorNGraph = AuthorNGraph.build(readFromRes1ById, metadata,
+                Arrays.asList(relationMetadata.split(",")));
+
+        return authorNGraph;
     }
 }
