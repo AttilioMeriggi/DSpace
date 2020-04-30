@@ -293,4 +293,66 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
         assertEquals("[Claire Williams]", authorNGraph.getChildren().get(1).getChildren().get(1).getName());
     }
 
+    /**
+     * Read DSpaceNode Graph
+     * 
+     * @throws Exception
+     * @throws SQLException
+     */
+    @Test
+    public void readDSpaceNodeGraph() throws SQLException, Exception {
+        // TODO: fix data...
+
+        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, null);
+        DSpaceNode researcher_2 = new DSpaceNode("Researcher", "2", metadata_res2, null);
+        DSpaceNode researcher_3 = new DSpaceNode("Researcher", "3", metadata_res3, null);
+
+        DSpaceRelation rel1_pub1 = new DSpaceRelation("coauthor", researcher_1, metadata_rel1);
+        DSpaceRelation rel2_pub1 = new DSpaceRelation("coauthor", researcher_2, metadata_rel2);
+        DSpaceRelation rel3_pub1 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        List<DSpaceRelation> relations_pub1 = new ArrayList<DSpaceRelation>();
+        relations_pub1.add(rel1_pub1);
+        relations_pub1.add(rel2_pub1);
+        relations_pub1.add(rel3_pub1);
+        DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, relations_pub1);
+        neo4jService.createUpdateNode(context, publication_1);
+
+        DSpaceRelation rel1_pub2 = new DSpaceRelation("coauthor", researcher_1, metadata_rel1);
+        DSpaceRelation rel2_pub2 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        List<DSpaceRelation> relations_pub2 = new ArrayList<DSpaceRelation>();
+        relations_pub2.add(rel1_pub2);
+        relations_pub2.add(rel2_pub2);
+        DSpaceNode publication_2 = new DSpaceNode("Publication", "102", metadata_pub2, relations_pub2);
+        neo4jService.createUpdateNode(context, publication_2);
+
+        DSpaceRelation rel1_pub3 = new DSpaceRelation("coauthor", researcher_1, metadata_rel1);
+        DSpaceRelation rel2_pub3 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        List<DSpaceRelation> relations_pub3 = new ArrayList<DSpaceRelation>();
+        relations_pub3.add(rel1_pub3);
+        relations_pub3.add(rel2_pub3);
+        DSpaceNode publication_3 = new DSpaceNode("Publication", "103", metadata_pub3, relations_pub3);
+        neo4jService.createUpdateNode(context, publication_3);
+
+        DSpaceRelation rel1_pub4 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        List<DSpaceRelation> relations_pub4 = new ArrayList<DSpaceRelation>();
+        relations_pub4.add(rel1_pub4);
+        DSpaceNode publication_4 = new DSpaceNode("Publication", "104", metadata_pub4, relations_pub4);
+        neo4jService.createUpdateNode(context, publication_4);
+
+        DSpaceRelation rel1_res4 = new DSpaceRelation("coauthor", publication_4, metadata_rel4);
+        List<DSpaceRelation> relations_res4 = new ArrayList<DSpaceRelation>();
+        relations_res4.add(rel1_res4);
+        DSpaceNode researcher_4 = new DSpaceNode("Researcher", "4", metadata_res4, relations_res4);
+        neo4jService.createUpdateNode(context, researcher_4);
+
+        // Read depth = 2
+        MvcResult result = getClient()
+                .perform(get("/api/app/neo4j/ngraph/" + researcher_1.getIDDB()).param("depth", "5"))
+                .andExpect(status().isOk()).andReturn();
+
+        DSpaceNode dspaceNodeGraph = DSpaceNode.build(result.getResponse().getContentAsString());
+
+        // TODO: put assert
+    }
+
 }
