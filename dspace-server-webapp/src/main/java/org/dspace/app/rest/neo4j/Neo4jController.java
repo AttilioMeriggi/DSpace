@@ -87,14 +87,15 @@ public class Neo4jController {
     }
 
     /***
-     * Return an AuthorNGraph.
+     * Return an AuthorNGraph, starting from a UDDI of an item node (or an IDDB of a
+     * neo4j node).
      * 
      * @param request          The request
      * @param iddb             The key
      * @param depth            The depth of the graph
      * @param metadata         The Metadata used to fill the name
      * @param relationMetadata The metadata used to fill the relation
-     * @return The DSpaceNode
+     * @return The AuthorNGraph
      * @throws AuthorizeException
      */
     @RequestMapping(method = RequestMethod.GET, value = "/authorngraph/{iddb}")
@@ -107,5 +108,24 @@ public class Neo4jController {
         Context context = ContextUtil.obtainContext(request);
 
         return neo4jRepository.authorNGraph(context, iddb, depth, metadata, relationMetadata);
+    }
+
+    /***
+     * Return the graph, starting from a UDDI of an item node (or an IDDB of a neo4j
+     * node).
+     * 
+     * @param request The request
+     * @param iddb    The key
+     * @param depth   The depth of the graph
+     * @return The DSpaceNode graph
+     * @throws AuthorizeException
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/ngraph/{iddb}")
+    public DSpaceNode graph(HttpServletRequest request, @PathVariable("iddb") String iddb,
+            @RequestParam(value = "depth", required = true) int depth) throws AuthorizeException {
+
+        Context context = ContextUtil.obtainContext(request);
+
+        return neo4jRepository.graph(context, iddb, depth);
     }
 }
