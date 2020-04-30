@@ -40,6 +40,8 @@ public class AuthorNGraphData {
     }
     
     public void addRelation(AuthorNGraphData d) {
-        relation += ";" + d.getRelation();
+        //if (d.getRelation() != null && d.getRelation().length() > 0) {
+            relation += "; " + d.getRelation();
+        //}
     }
 }

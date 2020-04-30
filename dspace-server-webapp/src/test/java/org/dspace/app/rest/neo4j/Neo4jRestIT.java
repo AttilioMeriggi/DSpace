@@ -8,7 +8,6 @@
 package org.dspace.app.rest.neo4j;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -155,44 +154,23 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
 
             /* Metadata relationship_1 */
             metadata_rel1 = new HashMap<String, List<String>>();
-            List<String> list1_rel1 = new ArrayList<>();
-            list1_rel1.add("13/01/2020");
-            List<String> list2_rel1 = new ArrayList<>();
-            list2_rel1.add("Italy");
-            list2_rel1.add("Usa");
-            list2_rel1.add("Spain");
-            metadata_rel1.put("dc.date.issued", list1_rel1);
-            metadata_rel1.put("dc.coverage.spatial", list2_rel1);
+            metadata_rel1.put("dc.title", list1_pub1);
+            metadata_rel1.put("dc.type", list2_pub1);
 
             /* Metadata relationship_2 */
             metadata_rel2 = new HashMap<String, List<String>>();
-            List<String> list1_rel2 = new ArrayList<>();
-            list1_rel2.add("20/01/2020");
-            List<String> list2_rel2 = new ArrayList<>();
-            list2_rel2.add("Italy");
-            list2_rel2.add("Usa");
-            list2_rel2.add("Japan");
-            metadata_rel2.put("dc.date.issued", list1_rel2);
-            metadata_rel2.put("dc.coverage.spatial", list2_rel2);
+            metadata_rel2.put("dc.title", list1_pub2);
+            metadata_rel2.put("dc.type", list2_pub2);
 
             /* Metadata relationship_3 */
             metadata_rel3 = new HashMap<String, List<String>>();
-            List<String> list1_rel3 = new ArrayList<>();
-            list1_rel3.add("24/07/2020");
-            List<String> list2_rel3 = new ArrayList<>();
-            list2_rel3.add("Argentina");
-            metadata_rel3.put("dc.date.issued", list1_rel3);
-            metadata_rel3.put("dc.coverage.spatial", list2_rel3);
+            metadata_rel3.put("dc.title", list1_pub3);
+            metadata_rel3.put("dc.type", list2_pub3);
 
             /* Metadata relationship_4 */
             metadata_rel4 = new HashMap<String, List<String>>();
-            List<String> list1_rel4 = new ArrayList<>();
-            list1_rel4.add("28/01/2020");
-            List<String> list2_rel4 = new ArrayList<>();
-            list2_rel4.add("Canada");
-            list2_rel4.add("Usa");
-            metadata_rel4.put("dc.date.issued", list1_rel4);
-            metadata_rel4.put("dc.coverage.spatial", list2_rel4);
+            metadata_rel4.put("dc.title", list1_pub4);
+            metadata_rel4.put("dc.type", list2_pub4);
 
             /* clean up neo4j */
             neo4jService.deleteGraph(context);
@@ -203,11 +181,11 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
 
     @Test
     public void createTest() throws Exception {
-        DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, null);
+        DSpaceNode publication_1 = new DSpaceNode("Publication", "4d68f32e-6122-428c-81a9-6bcf03d1abad", metadata_pub1, null);
         DSpaceRelation rel1_res1 = new DSpaceRelation("coauthor", publication_1, metadata_rel1);
         List<DSpaceRelation> list_rel_res1 = new ArrayList<DSpaceRelation>();
         list_rel_res1.add(rel1_res1);
-        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, list_rel_res1);
+        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "72ab2970-de17-4797-a307-49c5921ce351", metadata_res1, list_rel_res1);
 
         ObjectMapper mapper = new ObjectMapper();
         String authToken = getAuthToken(admin.getEmail(), password);
@@ -221,11 +199,11 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
 
     @Test
     public void readTest() throws Exception {
-        DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, null);
+        DSpaceNode publication_1 = new DSpaceNode("Publication", "4d68f32e-6122-428c-81a9-6bcf03d1abad", metadata_pub1, null);
         DSpaceRelation rel1_res1 = new DSpaceRelation("coauthor", publication_1, metadata_rel1);
         List<DSpaceRelation> list_rel_res1 = new ArrayList<DSpaceRelation>();
         list_rel_res1.add(rel1_res1);
-        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, list_rel_res1);
+        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "72ab2970-de17-4797-a307-49c5921ce351", metadata_res1, list_rel_res1);
 
         neo4jService.createUpdateNode(context, researcher_1);
 
@@ -247,29 +225,29 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
      */
     @Test
     public void readAuthorGraph() throws SQLException, Exception {
-        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "1", metadata_res1, null);
-        DSpaceNode researcher_2 = new DSpaceNode("Researcher", "2", metadata_res2, null);
-        DSpaceNode researcher_3 = new DSpaceNode("Researcher", "3", metadata_res3, null);
+        DSpaceNode researcher_1 = new DSpaceNode("Researcher", "72ab2970-de17-4797-a307-49c5921ce351", metadata_res1, null);
+        DSpaceNode researcher_2 = new DSpaceNode("Researcher", "853630d2-f04f-439d-b397-afbadf9ce80c", metadata_res2, null);
+        DSpaceNode researcher_3 = new DSpaceNode("Researcher", "547a412a-9949-4c37-904c-df82b662b718", metadata_res3, null);
 
         DSpaceRelation rel1_pub1 = new DSpaceRelation("coauthor", researcher_1, metadata_rel1);
-        DSpaceRelation rel2_pub1 = new DSpaceRelation("coauthor", researcher_2, metadata_rel2);
-        DSpaceRelation rel3_pub1 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        DSpaceRelation rel2_pub1 = new DSpaceRelation("coauthor", researcher_2, metadata_rel1);
+        DSpaceRelation rel3_pub1 = new DSpaceRelation("coauthor", researcher_3, metadata_rel1);
         List<DSpaceRelation> relations_pub1 = new ArrayList<DSpaceRelation>();
         relations_pub1.add(rel1_pub1);
         relations_pub1.add(rel2_pub1);
         relations_pub1.add(rel3_pub1);
-        DSpaceNode publication_1 = new DSpaceNode("Publication", "101", metadata_pub1, relations_pub1);
+        DSpaceNode publication_1 = new DSpaceNode("Publication", "4d68f32e-6122-428c-81a9-6bcf03d1abad", metadata_pub1, relations_pub1);
         neo4jService.createUpdateNode(context, publication_1);
 
-        DSpaceRelation rel1_pub2 = new DSpaceRelation("coauthor", researcher_1, metadata_rel1);
-        DSpaceRelation rel2_pub2 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        DSpaceRelation rel1_pub2 = new DSpaceRelation("coauthor", researcher_1, metadata_rel2);
+        DSpaceRelation rel2_pub2 = new DSpaceRelation("coauthor", researcher_3, metadata_rel2);
         List<DSpaceRelation> relations_pub2 = new ArrayList<DSpaceRelation>();
         relations_pub2.add(rel1_pub2);
         relations_pub2.add(rel2_pub2);
         DSpaceNode publication_2 = new DSpaceNode("Publication", "102", metadata_pub2, relations_pub2);
         neo4jService.createUpdateNode(context, publication_2);
 
-        DSpaceRelation rel1_pub3 = new DSpaceRelation("coauthor", researcher_1, metadata_rel1);
+        DSpaceRelation rel1_pub3 = new DSpaceRelation("coauthor", researcher_1, metadata_rel3);
         DSpaceRelation rel2_pub3 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
         List<DSpaceRelation> relations_pub3 = new ArrayList<DSpaceRelation>();
         relations_pub3.add(rel1_pub3);
@@ -277,7 +255,7 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
         DSpaceNode publication_3 = new DSpaceNode("Publication", "103", metadata_pub3, relations_pub3);
         neo4jService.createUpdateNode(context, publication_3);
 
-        DSpaceRelation rel1_pub4 = new DSpaceRelation("coauthor", researcher_3, metadata_rel3);
+        DSpaceRelation rel1_pub4 = new DSpaceRelation("coauthor", researcher_3, metadata_rel4);
         List<DSpaceRelation> relations_pub4 = new ArrayList<DSpaceRelation>();
         relations_pub4.add(rel1_pub4);
         DSpaceNode publication_4 = new DSpaceNode("Publication", "104", metadata_pub4, relations_pub4);
@@ -286,28 +264,33 @@ public class Neo4jRestIT extends AbstractNeo4jIntegrationTest {
         DSpaceRelation rel1_res4 = new DSpaceRelation("coauthor", publication_4, metadata_rel4);
         List<DSpaceRelation> relations_res4 = new ArrayList<DSpaceRelation>();
         relations_res4.add(rel1_res4);
-        DSpaceNode researcher_4 = new DSpaceNode("Researcher", "4", metadata_res4, relations_res4);
+        DSpaceNode researcher_4 = new DSpaceNode("Researcher", "d5ed4470-8969-4a15-a0c3-5536e91edbf6", metadata_res4, relations_res4);
         neo4jService.createUpdateNode(context, researcher_4);
 
         MvcResult result = getClient()
                 .perform(get("/api/app/neo4j/authorngraph/" + researcher_1.getIDDB()).param("depth", "5")
-                        .param("metadata", "dc_contributor_author")
-                        .param("relationMetadata", "dc_date_issued,dc_coverage_spatial"))
+                        .param("metadata", "dc_contributor_author").param("relationMetadata", "dc_title,dc_type"))
                 .andExpect(status().isOk()).andReturn();
 
         AuthorNGraph authorNGraph = AuthorNGraph.build(result.getResponse().getContentAsString());
 
-        assertEquals("1", authorNGraph.getId());
+        assertEquals("72ab2970-de17-4797-a307-49c5921ce351", authorNGraph.getId());
         assertEquals("[Steve Smith]", authorNGraph.getName());
 
-        assertEquals(4, authorNGraph.getChildren().size());
+        assertEquals(2, authorNGraph.getChildren().size());
         assertEquals("[Claire Williams]", authorNGraph.getChildren().get(0).getName());
+        assertEquals("dc_title:[Web Research], dc_type:[Magazine]",
+                authorNGraph.getChildren().get(0).getData().getRelation());
         assertEquals("[Tom Taylor]", authorNGraph.getChildren().get(1).getName());
+        assertEquals(
+                "dc_title:[Web Research], dc_type:[Magazine]; dc_title:[Software Research], dc_type:[Item]; dc_title:[Cluster Analysis], dc_type:[Item]",
+                authorNGraph.getChildren().get(1).getData().getRelation());
 
         assertEquals(0, authorNGraph.getChildren().get(0).getChildren().size());
-        assertEquals(1, authorNGraph.getChildren().get(1).getChildren().size());
+        assertEquals(2, authorNGraph.getChildren().get(1).getChildren().size());
 
         assertEquals("[Daniel Brown]", authorNGraph.getChildren().get(1).getChildren().get(0).getName());
+        assertEquals("[Claire Williams]", authorNGraph.getChildren().get(1).getChildren().get(1).getName());
     }
 
 }
