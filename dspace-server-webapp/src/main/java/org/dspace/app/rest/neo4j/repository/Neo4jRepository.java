@@ -50,6 +50,8 @@ public class Neo4jRepository {
     }
 
     /***
+     * Return an AuthorNGraph, starting from a UDDI of an item node (or an IDDB of a
+     * neo4j node).
      * 
      * @param context          The context
      * @param iddb             The key
@@ -66,5 +68,20 @@ public class Neo4jRepository {
                 Arrays.asList(relationMetadata.split(",")));
 
         return authorNGraph;
+    }
+
+    /***
+     * Return the graph, starting from a UDDI of an item node (or an IDDB of a neo4j
+     * node).
+     * 
+     * @param context The context
+     * @param iddb    The key
+     * @param depth   The depth of the graph
+     * @return
+     */
+    public DSpaceNode graph(Context context, String iddb, int depth) {
+        DSpaceNode readFromRes1ById = neo4jService.readNodeById(context, iddb, depth);
+
+        return readFromRes1ById;
     }
 }
