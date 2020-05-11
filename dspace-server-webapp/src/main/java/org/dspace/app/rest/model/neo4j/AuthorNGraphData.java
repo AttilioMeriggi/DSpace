@@ -17,7 +17,7 @@ public class AuthorNGraphData {
 
     public AuthorNGraphData() {
     }
-    
+
     public AuthorNGraphData(DSpaceRelation rel, List<String> metadata) {
         if (rel.getMetadata() != null && rel.getMetadata().size() > 0) {
             for (Map.Entry<String, List<String>> ml : rel.getMetadata().entrySet()) {
@@ -30,7 +30,7 @@ public class AuthorNGraphData {
             }
         }
     }
-    
+
     public String getRelation() {
         return relation;
     }
@@ -38,10 +38,8 @@ public class AuthorNGraphData {
     public void setRelation(String relation) {
         this.relation = relation;
     }
-    
+
     public void addRelation(AuthorNGraphData d) {
-        //if (d.getRelation() != null && d.getRelation().length() > 0) {
-            relation += "; " + d.getRelation();
-        //}
+        relation += "; " + d.getRelation();
     }
 }

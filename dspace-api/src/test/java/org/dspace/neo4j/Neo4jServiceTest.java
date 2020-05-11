@@ -64,7 +64,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         generic_researcher = new DSpaceNode("Researcher", "1");
         generic_publication = new DSpaceNode("Publication", "101");
 
-        /* Metadata researcher_1 IDDB = 1 */
+        /* Metadata researcher_1 */
         metadata_res1 = new HashMap<String, List<String>>();
         List<String> list1_res1 = new ArrayList<>();
         list1_res1.add("Steve Smith");
@@ -77,7 +77,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         metadata_res1.put("dc.contributor.editor", list2_res1);
         metadata_res1.put("dc.relation.orgunit", list3_res1);
 
-        /* Metadata researcher_2 IDDB = 2 */
+        /* Metadata researcher_2 */
         metadata_res2 = new HashMap<String, List<String>>();
         List<String> list1_res2 = new ArrayList<>();
         list1_res2.add("Claire Williams");
@@ -90,7 +90,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         metadata_res2.put("dc.contributor.editor", list2_res2);
         metadata_res2.put("dc.relation.orgunit", list3_res2);
 
-        /* Metadata researcher_3 IDDB = 3 */
+        /* Metadata researcher_3 */
         metadata_res3 = new HashMap<String, List<String>>();
         List<String> list1_res3 = new ArrayList<>();
         list1_res3.add("Tom Taylor");
@@ -102,7 +102,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         metadata_res3.put("dc.contributor.editor", list2_res3);
         metadata_res3.put("dc.relation.orgunit", list3_res3);
 
-        /* Metadata publication_1 IDDB = 101 */
+        /* Metadata publication_1 */
         metadata_pub1 = new HashMap<String, List<String>>();
         List<String> list1_pub1 = new ArrayList<>();
         list1_pub1.add("Web Research");
@@ -111,7 +111,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         metadata_pub1.put("dc.title", list1_pub1);
         metadata_pub1.put("dc.type", list2_pub1);
 
-        /* Metadata publication_2 IDDB = 102 */
+        /* Metadata publication_2 */
         metadata_pub2 = new HashMap<String, List<String>>();
         List<String> list1_pub2 = new ArrayList<>();
         list1_pub2.add("Software Research");
@@ -120,7 +120,7 @@ public class Neo4jServiceTest extends AbstractNeo4jTest {
         metadata_pub2.put("dc.title", list1_pub2);
         metadata_pub2.put("dc.type", list2_pub2);
 
-        /* Metadata publication_3 IDDB = 103 */
+        /* Metadata publication_3 */
         metadata_pub3 = new HashMap<String, List<String>>();
         List<String> list1_pub3 = new ArrayList<>();
         list1_pub3.add("Cluster Analysis");
